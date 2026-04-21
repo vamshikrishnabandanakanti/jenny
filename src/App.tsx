@@ -21,15 +21,6 @@ function App() {
   const demoTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
   
-  // Progress bar logic
-  const { scrollYProgress } = useScroll({
-    container: containerRef
-  })
-  const scaleX = useSpring(scrollYProgress, {
-    stiffness: 100,
-    damping: 30,
-    restDelta: 0.001
-  })
 
   const allNavItems = [
     { id: "home", label: "Home" },
@@ -174,17 +165,6 @@ function App() {
         </motion.div>
       </nav>
 
-      {/* Progress Bar */}
-      <AnimatePresence>
-        {isUnlocked && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            className="fixed top-0 left-0 right-0 h-1 bg-blue-500 origin-left z-[110]"
-            style={{ scaleX }}
-          />
-        )}
-      </AnimatePresence>
 
       {/* Home (Hero) Overlay - Slides up and down independently to avoid scroll jumping */}
       <motion.div
