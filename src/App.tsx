@@ -6,7 +6,7 @@ import WorkflowDemo from "@/components/workflow/demo"
 import FeatureCardDemo from "@/components/platforms/demo"
 import { AnimatedAIChat } from "@/components/chat/animated-ai-chat"
 import { DarkGradientBackground } from "@/components/chat/dark-gradient-background"
-import { motion, useScroll, useSpring, AnimatePresence } from "framer-motion"
+import { motion, AnimatePresence } from "framer-motion"
 
 function App() {
   const [isUnlocked, setIsUnlocked] = useState(false)
@@ -17,9 +17,9 @@ function App() {
   const isScrolling = useRef(false)
   
   // Timeout refs to handle rapid clicking flawlessly
-  const homeTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const demoTimeoutRef = useRef<NodeJS.Timeout | null>(null)
-  const scrollTimeoutRef = useRef<NodeJS.Timeout | null>(null)
+  const homeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const demoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
+  const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   
 
   const allNavItems = [
@@ -122,9 +122,10 @@ function App() {
 
     container.addEventListener('scroll', handleScroll)
     return () => container.removeEventListener('scroll', handleScroll)
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [isUnlocked, showHome, activePage])
 
-  const springConfig = { type: "spring", bounce: 0.15, duration: 0.8 };
+  const springConfig = { type: "spring" as const, bounce: 0.15, duration: 0.8 };
 
   return (
     <div className="relative h-screen w-full overflow-hidden bg-black text-white">

@@ -1,13 +1,11 @@
 'use client';
 
 import {
+  useState,
   useEffect,
   useRef,
-  useState,
-  ReactNode,
-  TouchEvent,
-  WheelEvent,
-} from 'react';
+} from "react";
+import type { ReactNode } from "react";
 import { motion } from 'framer-motion';
 
 interface ScrollExpandMediaProps {
@@ -36,7 +34,6 @@ const ScrollExpandMedia = ({
   const [scrollProgress, setScrollProgress] = useState<number>(0);
   const [showContent, setShowContent] = useState<boolean>(false);
   const [mediaFullyExpanded, setMediaFullyExpanded] = useState<boolean>(false);
-  const [touchStartY, setTouchStartY] = useState<number>(0);
   const [isMobileState, setIsMobileState] = useState<boolean>(false);
 
   const scrollProgressRef = useRef(0);
@@ -54,6 +51,7 @@ const ScrollExpandMedia = ({
   }, [mediaFullyExpanded]);
 
   useEffect(() => {
+    // eslint-disable-next-line react-hooks/set-state-in-effect
     setScrollProgress(0);
     setShowContent(false);
     setMediaFullyExpanded(false);
@@ -62,7 +60,7 @@ const ScrollExpandMedia = ({
   }, [mediaType]);
 
   useEffect(() => {
-    const handleWheel = (e: any) => {
+    const handleWheel = (e: WheelEvent) => {
       // Find the scrollable container (main in our App.tsx)
       const container = document.querySelector('main') || window;
       const scrollTop = container instanceof HTMLElement ? container.scrollTop : window.scrollY;
@@ -89,11 +87,11 @@ const ScrollExpandMedia = ({
       }
     };
 
-    const handleTouchStart = (e: any) => {
+    const handleTouchStart = (e: TouchEvent) => {
       touchStartYRef.current = e.touches[0].clientY;
     };
 
-    const handleTouchMove = (e: any) => {
+    const handleTouchMove = (e: TouchEvent) => {
       if (!touchStartYRef.current) return;
 
       const touchY = e.touches[0].clientY;

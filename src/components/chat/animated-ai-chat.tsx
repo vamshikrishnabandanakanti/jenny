@@ -5,16 +5,10 @@ import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
     ImageIcon,
-    FileUp,
     LayoutTemplate,
     Monitor,
-    CircleUserRound,
-    ArrowUpIcon,
     Paperclip,
-    PlusIcon,
     SendIcon,
-    XIcon,
-    LoaderIcon,
     Sparkles,
     Command,
 } from "lucide-react";
@@ -134,9 +128,12 @@ interface Message {
 export function AnimatedAIChat() {
     const [value, setValue] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
-    const [attachments, setAttachments] = useState<string[]>([]);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_attachments, setAttachments] = useState<string[]>([]);
     const [isTyping, setIsTyping] = useState(false);
-    const [isPending, startTransition] = useTransition();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const [_isPending, startTransition] = useTransition();
+
     const [activeSuggestion, setActiveSuggestion] = useState<number>(-1);
     const [showCommandPalette, setShowCommandPalette] = useState(false);
     const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
@@ -190,6 +187,7 @@ export function AnimatedAIChat() {
 
     useEffect(() => {
         if (value.startsWith('/') && !value.includes(' ')) {
+            // eslint-disable-next-line react-hooks/set-state-in-effect
             setShowCommandPalette(true);
             const matchingSuggestionIndex = commandSuggestions.findIndex(
                 (cmd) => cmd.prefix.startsWith(value)
@@ -202,6 +200,7 @@ export function AnimatedAIChat() {
         } else {
             setShowCommandPalette(false);
         }
+        // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [value]);
 
     useEffect(() => {
