@@ -19,22 +19,21 @@ export function IlluminatedHero() {
 						'animate-[onloadopacity_1s_ease-out_forwards]'
 					)}
 					style={{ filter: 'url(#glow-4)' }}
-					data-text="Illuminated Glow Text."
+					data-text="Jenny AI"
 				>
-					Illuminated Glow Text.
+					Jenny AI
 				</div>
 				<div className="text-4xl md:text-6xl font-semibold opacity-90 mt-2">
-					Highlight the main focus text.
+					Multi-Agent Panic Intelligence
 				</div>
 			</div>
 
 			<p className="absolute bottom-20 m-auto max-w-[32em] bg-gradient-to-t from-[#86868b] to-[#bdc2c9] bg-clip-text text-center font-semibold text-transparent z-10 px-6 text-sm md:text-base leading-relaxed">
-				Experience a new way to draw attention to key elements with stunning{' '}
-				<span className="relative inline-block font-black text-[#e7dfd6]">
-					illuminated text.
-				</span>{' '}
-				Perfect for making a bold statement, this dynamic design ensures your
-				content stands out effortlessly.
+				When everything goes wrong — missed train, low battery, no money, or an
+				unsafe situation — Jenny understands instantly, analyzes your
+				situation, and activates intelligent AI agents in real time. It guides
+				you step-by-step, delivering a calm, structured recovery plan within
+				seconds.
 			</p>
 
 			<svg

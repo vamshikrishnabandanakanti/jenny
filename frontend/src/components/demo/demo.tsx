@@ -23,14 +23,14 @@ const videoContent: MediaContent = {
     'https://images.pexels.com/videos/5752729/space-earth-universe-cosmos-5752729.jpeg',
   background:
     'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS',
-  title: 'Immersive Video Experience',
-  date: 'Cosmic Journey',
-  scrollToExpand: 'Scroll to Expand Demo',
+  title: 'See Jenny in Action',
+  date: 'Multi-Agent Demo',
+  scrollToExpand: 'Scroll to Explore System',
   about: {
     overview:
-      'This is a demonstration of the ScrollExpandMedia component with a video. As you scroll, the video expands to fill more of the screen, creating an immersive experience. This component is perfect for showcasing video content in a modern, interactive way.',
+      'Watch how Jenny processes real-world panic situations using a multi-agent AI system. As soon as a scenario is detected, Jenny analyzes context, urgency, and constraints, then orchestrates multiple specialized agents — including safety, transport, communication, and resource management.',
     conclusion:
-      'The ScrollExpandMedia component provides a unique way to engage users with your content through interactive scrolling.',
+      'These agents work in parallel to generate actionable insights, which are then merged into a structured recovery plan. The output is optimized for clarity, speed, and real-world usability, helping users make better decisions under pressure.',
   },
 };
 
@@ -38,7 +38,7 @@ const Content = () => {
   return (
     <div className='max-w-4xl mx-auto'>
       <h2 className='text-3xl font-bold mb-6 text-white'>
-        About This Component
+        See Jenny in Action
       </h2>
       <p className='text-lg mb-8 text-white/80'>
         {videoContent.about.overview}

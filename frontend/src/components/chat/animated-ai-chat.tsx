@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef, useCallback, useTransition } from "react";
+import { useEffect, useRef, useCallback } from "react";
 import { useState } from "react";
 import { cn } from "@/lib/utils";
 import {
@@ -128,11 +128,7 @@ interface Message {
 export function AnimatedAIChat() {
     const [value, setValue] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_attachments, setAttachments] = useState<string[]>([]);
     const [isTyping, setIsTyping] = useState(false);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const [_isPending, startTransition] = useTransition();
 
     const [activeSuggestion, setActiveSuggestion] = useState<number>(-1);
     const [showCommandPalette, setShowCommandPalette] = useState(false);
@@ -211,34 +207,45 @@ export function AnimatedAIChat() {
         return () => window.removeEventListener('mousemove', handleMouseMove);
     }, []);
 
-    const handleSendMessage = () => {
-        if (!value.trim()) return;
+    const handleSendMessage = async () => {
+        if (!value.trim() || isTyping) return;
 
+        const userInput = value.trim();
         const newUserMessage: Message = {
             id: Date.now().toString(),
             role: "user",
-            content: value.trim(),
+            content: userInput,
             timestamp: new Date(),
         };
 
         setMessages(prev => [...prev, newUserMessage]);
         setValue("");
         adjustHeight(true);
+        setIsTyping(true);
 
-        startTransition(() => {
-            setIsTyping(true);
-            // Mock AI Response
-            setTimeout(() => {
-                const assistantMessage: Message = {
-                    id: (Date.now() + 1).toString(),
-                    role: "assistant",
-                    content: `I've received your message: "${newUserMessage.content}". How else can I assist you with your design?`,
-                    timestamp: new Date(),
-                };
-                setMessages(prev => [...prev, assistantMessage]);
-                setIsTyping(false);
-            }, 2000);
-        });
+        try {
+            const { callJennyBackend } = await import("@/lib/jenny-api");
+            const jennyData = await callJennyBackend(userInput);
+
+            const assistantMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                role: "assistant",
+                content: jennyData.recoveryPlan,
+                timestamp: new Date(),
+            };
+            setMessages(prev => [...prev, assistantMessage]);
+        } catch (error) {
+            console.error("[Chat] Backend error:", error);
+            const errorMessage: Message = {
+                id: (Date.now() + 1).toString(),
+                role: "assistant",
+                content: "I'm having trouble connecting right now. Please check that the backend server is running on port 3001 and try again.",
+                timestamp: new Date(),
+            };
+            setMessages(prev => [...prev, errorMessage]);
+        } finally {
+            setIsTyping(false);
+        }
     };
 
     const handleKeyDown = (e: React.KeyboardEvent<HTMLTextAreaElement>) => {
@@ -267,8 +274,8 @@ export function AnimatedAIChat() {
     };
 
     const handleAttachFile = () => {
-        const mockFileName = `file-${Math.floor(Math.random() * 1000)}.pdf`;
-        setAttachments(prev => [...prev, mockFileName]);
+        // Attachment support coming soon
+        console.log("[Chat] File attachment clicked — feature pending");
     };
 
     return (

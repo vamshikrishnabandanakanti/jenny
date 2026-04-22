@@ -194,8 +194,18 @@ function App() {
             {isFullyUnlocked && (
               <>
                 {/* 2nd: Workflow Page */}
-                <section id="workflow" className="w-full min-h-screen bg-black flex items-center justify-center py-20">
-                  <WorkflowDemo />
+                <section id="workflow" className="w-full min-h-screen bg-white text-black flex items-center justify-center py-20 relative overflow-hidden">
+                  {/* Subtle Grid Pattern for Canvas Feel */}
+                  <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" 
+                    style={{ 
+                      backgroundImage: `radial-gradient(#000 1px, transparent 1px), radial-gradient(#000 1px, transparent 1px)`,
+                      backgroundSize: '40px 40px',
+                      backgroundPosition: '0 0, 20px 20px'
+                    }} 
+                  />
+                  <div className="relative z-10 w-full flex items-center justify-center">
+                    <WorkflowDemo />
+                  </div>
                 </section>
 
                 {/* 3rd: Developers Page */}

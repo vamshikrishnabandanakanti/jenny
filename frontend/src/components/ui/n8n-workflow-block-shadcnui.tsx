@@ -8,12 +8,19 @@ import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import {
   ArrowRight,
+  Brain,
+  CheckCircle,
+  Cpu,
+  Layout,
+  MessageSquare,
+  Shield,
+  MapPin,
+  Car,
+  FileText,
   Database,
-  Mail,
+  RefreshCw,
   Plus,
-  Settings,
-  Webhook,
-  Zap,
+  User,
 } from "lucide-react";
 
 // Interfaces
@@ -33,88 +40,180 @@ interface WorkflowConnection {
 }
 
 // Constants
-const NODE_WIDTH = 200;
-const NODE_HEIGHT = 100;
+const NODE_WIDTH = 140;
+const NODE_HEIGHT = 65;
 
 const nodeTemplates: Omit<WorkflowNode, "id" | "position">[] = [
   {
     type: "trigger",
-    title: "Webhook",
-    description: "Receive data from external service",
-    icon: Webhook,
+    title: "User Input",
+    description: "New emergency request",
+    icon: User,
+    color: "blue",
+  },
+  {
+    type: "action",
+    title: "Manager Agent",
+    description: "Orchestrate recovery",
+    icon: Brain,
+    color: "indigo",
+  },
+  {
+    type: "action",
+    title: "Parallel Agent",
+    description: "Specialized task execution",
+    icon: Cpu,
     color: "emerald",
   },
   {
     type: "action",
-    title: "Database Query",
-    description: "Fetch user records",
+    title: "Resource Check",
+    description: "Database lookup",
     icon: Database,
     color: "blue",
   },
   {
-    type: "condition",
-    title: "Condition",
-    description: "Check user status",
-    icon: Settings,
+    type: "action",
+    title: "Fallback",
+    description: "Contingency logic",
+    icon: RefreshCw,
     color: "amber",
-  },
-  {
-    type: "action",
-    title: "Send Email",
-    description: "Notify user",
-    icon: Mail,
-    color: "purple",
-  },
-  {
-    type: "action",
-    title: "Log Event",
-    description: "Record activity",
-    icon: Zap,
-    color: "indigo",
   },
 ];
 
 const initialNodes: WorkflowNode[] = [
   {
-    id: "node-1",
+    id: "user-input",
     type: "trigger",
-    title: "Webhook",
-    description: "Receive data from external service",
-    icon: Webhook,
-    color: "emerald",
-    position: { x: 50, y: 100 },
-  },
-  {
-    id: "node-2",
-    type: "action",
-    title: "Database Query",
-    description: "Fetch user records",
-    icon: Database,
+    title: "User Input",
+    description: "Emergency request received",
+    icon: User,
     color: "blue",
-    position: { x: 300, y: 100 },
+    position: { x: 430, y: 30 },
   },
   {
-    id: "node-3",
+    id: "manager-agent",
+    type: "action",
+    title: "Manager Agent",
+    description: "Core Intelligence",
+    icon: Brain,
+    color: "indigo",
+    position: { x: 430, y: 135 },
+  },
+  // Parallel Agents Row 1
+  {
+    id: "agent-location",
+    type: "action",
+    title: "Location",
+    description: "Geo-spatial analysis",
+    icon: MapPin,
+    color: "emerald",
+    position: { x: 160, y: 240 },
+  },
+  {
+    id: "agent-safety",
+    type: "action",
+    title: "Safety",
+    description: "Threat assessment",
+    icon: Shield,
+    color: "emerald",
+    position: { x: 340, y: 240 },
+  },
+  {
+    id: "agent-transport",
+    type: "action",
+    title: "Transport",
+    description: "Logistics & routing",
+    icon: Car,
+    color: "emerald",
+    position: { x: 520, y: 240 },
+  },
+  {
+    id: "agent-communication",
+    type: "action",
+    title: "Communication",
+    description: "Network & dispatch",
+    icon: MessageSquare,
+    color: "emerald",
+    position: { x: 700, y: 240 },
+  },
+  // Parallel Agents Row 2
+  {
+    id: "agent-context",
+    type: "action",
+    title: "Context",
+    description: "Historical awareness",
+    icon: FileText,
+    color: "emerald",
+    position: { x: 250, y: 345 },
+  },
+  {
+    id: "agent-resource",
+    type: "action",
+    title: "Resource",
+    description: "Inventory check",
+    icon: Database,
+    color: "emerald",
+    position: { x: 430, y: 345 },
+  },
+  {
+    id: "agent-fallback",
+    type: "action",
+    title: "Fallback",
+    description: "Contingency planning",
+    icon: RefreshCw,
+    color: "emerald",
+    position: { x: 610, y: 345 },
+  },
+  {
+    id: "summarizer-agent",
     type: "condition",
-    title: "Condition",
-    description: "Check user status",
-    icon: Settings,
-    color: "amber",
-    position: { x: 550, y: 100 },
+    title: "Summarizer Agent",
+    description: "Plan consolidation",
+    icon: Layout,
+    color: "purple",
+    position: { x: 430, y: 450 },
+  },
+  {
+    id: "recovery-plan",
+    type: "action",
+    title: "Recovery Plan",
+    description: "Actionable output",
+    icon: CheckCircle,
+    color: "blue",
+    position: { x: 430, y: 550 },
   },
 ];
 
 const initialConnections: WorkflowConnection[] = [
-  { from: "node-1", to: "node-2" },
-  { from: "node-2", to: "node-3" },
+  // Input to Manager
+  { from: "user-input", to: "manager-agent" },
+  // Manager to Agents
+  { from: "manager-agent", to: "agent-location" },
+  { from: "manager-agent", to: "agent-safety" },
+  { from: "manager-agent", to: "agent-transport" },
+  { from: "manager-agent", to: "agent-communication" },
+  { from: "manager-agent", to: "agent-context" },
+  { from: "manager-agent", to: "agent-resource" },
+  { from: "manager-agent", to: "agent-fallback" },
+  // Agents to Summarizer
+  { from: "agent-location", to: "summarizer-agent" },
+  { from: "agent-safety", to: "summarizer-agent" },
+  { from: "agent-transport", to: "summarizer-agent" },
+  { from: "agent-communication", to: "summarizer-agent" },
+  { from: "agent-context", to: "summarizer-agent" },
+  { from: "agent-resource", to: "summarizer-agent" },
+  { from: "agent-fallback", to: "summarizer-agent" },
+  // Summarizer to Output
+  { from: "summarizer-agent", to: "recovery-plan" },
 ];
 
 const colorClasses: Record<string, string> = {
-  emerald: "border-emerald-400/40 bg-emerald-400/10 text-emerald-400",
-  blue: "border-blue-400/40 bg-blue-400/10 text-blue-400",
-  amber: "border-amber-400/40 bg-amber-400/10 text-amber-400",
-  purple: "border-purple-400/40 bg-purple-400/10 text-purple-400",
-  indigo: "border-indigo-400/40 bg-indigo-400/10 text-indigo-400",
+  emerald: "border-emerald-500/20 bg-emerald-50 text-emerald-600",
+  blue: "border-blue-500/20 bg-blue-50 text-blue-600",
+  amber: "border-amber-500/20 bg-amber-50 text-amber-600",
+  purple: "border-purple-500/20 bg-purple-50 text-purple-600",
+  indigo: "border-indigo-500/20 bg-indigo-50 text-indigo-600",
 };
 
 // Connection Line Component
@@ -131,15 +230,30 @@ function WorkflowConnectionLine({
   const toNode = nodes.find((n) => n.id === to);
   if (!fromNode || !toNode) return null;
 
-  const startX = fromNode.position.x + NODE_WIDTH;
-  const startY = fromNode.position.y + NODE_HEIGHT / 2;
-  const endX = toNode.position.x;
-  const endY = toNode.position.y + NODE_HEIGHT / 2;
+  const isVertical = Math.abs(toNode.position.x - fromNode.position.x) < NODE_WIDTH / 2;
 
-  const cp1X = startX + (endX - startX) * 0.5;
-  const cp2X = endX - (endX - startX) * 0.5;
+  let startX, startY, endX, endY;
 
-  const path = `M${startX},${startY} C${cp1X},${startY} ${cp2X},${endY} ${endX},${endY}`;
+  if (isVertical) {
+    startX = fromNode.position.x + NODE_WIDTH / 2;
+    startY = fromNode.position.y + NODE_HEIGHT;
+    endX = toNode.position.x + NODE_WIDTH / 2;
+    endY = toNode.position.y;
+  } else {
+    startX = fromNode.position.x + NODE_WIDTH / 2;
+    startY = fromNode.position.y + NODE_HEIGHT;
+    endX = toNode.position.x + NODE_WIDTH / 2;
+    endY = toNode.position.y;
+  }
+
+  // Adjusted paths for a more "flowing" look
+  const deltaY = endY - startY;
+  const cp1X = startX;
+  const cp1Y = startY + deltaY * 0.5;
+  const cp2X = endX;
+  const cp2Y = endY - deltaY * 0.5;
+
+  const path = `M${startX},${startY} C${cp1X},${cp1Y} ${cp2X},${cp2Y} ${endX},${endY}`;
 
   return (
     <path
@@ -253,7 +367,7 @@ export function N8nWorkflowBlock() {
   };
 
   return (
-    <div className="relative w-full overflow-hidden rounded-2xl border border-border/40 bg-background/60 backdrop-blur p-4 sm:p-6">
+    <div className="relative w-full overflow-hidden rounded-3xl border border-black/5 bg-white/80 backdrop-blur-xl p-4 sm:p-6 shadow-[0_8px_30px_rgb(0,0,0,0.04)]">
       {/* Header */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-3">
@@ -263,7 +377,7 @@ export function N8nWorkflowBlock() {
           >
             Active
           </Badge>
-          <span className="text-xs sm:text-sm uppercase tracking-[0.25em] text-foreground/50">
+          <span className="text-xs sm:text-sm uppercase tracking-[0.25em] text-black/40 font-medium">
             Workflow Builder
           </span>
         </div>
@@ -282,7 +396,7 @@ export function N8nWorkflowBlock() {
       {/* Canvas */}
       <div
         ref={canvasRef}
-        className="relative h-[400px] w-full overflow-auto rounded-xl border border-border/30 bg-background/40 sm:h-[500px] md:h-[600px]"
+        className="relative h-[400px] w-full overflow-hidden rounded-2xl border border-black/5 bg-slate-50/50 sm:h-[500px] md:h-[620px] shadow-inner"
         style={{ minHeight: "400px" }}
         role="region"
         aria-label="Workflow canvas"
@@ -324,12 +438,7 @@ export function N8nWorkflowBlock() {
                 key={node.id}
                 drag
                 dragMomentum={false}
-                dragConstraints={{
-                  left: 0,
-                  top: 0,
-                  right: 100000,
-                  bottom: 100000,
-                }}
+                dragConstraints={canvasRef}
                 onDragStart={() => handleDragStart(node.id)}
                 onDrag={(_, info) => handleDrag(node.id, info)}
                 onDragEnd={handleDragEnd}
@@ -337,7 +446,9 @@ export function N8nWorkflowBlock() {
                   x: node.position.x,
                   y: node.position.y,
                   width: NODE_WIDTH,
-                  transformOrigin: "0 0",
+                  transformOrigin: "center center",
+                  scale: node.id === "manager-agent" ? 1.05 : 1,
+                  zIndex: node.id === "manager-agent" ? 20 : 10,
                 }}
                 className="absolute cursor-grab"
                 initial={{ scale: 0.8, opacity: 0 }}
@@ -348,38 +459,37 @@ export function N8nWorkflowBlock() {
                 aria-grabbed={isDragging}
               >
                 <Card
-                  className={`group/node relative w-full overflow-hidden rounded-xl border ${colorClasses[node.color]} bg-background/70 p-3 backdrop-blur transition-all hover:shadow-lg ${isDragging ? "shadow-xl ring-2 ring-primary/50" : ""}`}
+                  className={`group/node relative w-full overflow-hidden rounded-xl border ${colorClasses[node.color]} bg-white p-2 shadow-sm transition-all hover:shadow-lg hover:-translate-y-0.5 ${isDragging ? "shadow-xl ring-2 ring-primary/10" : ""}`}
                   role="article"
                   aria-label={`${node.type} node: ${node.title}`}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-foreground/[0.04] via-transparent to-transparent opacity-0 transition-opacity duration-300 group-hover/node:opacity-100" />
 
-                  <div className="relative space-y-2">
-                    <div className="flex items-center gap-2">
+                  <div className="relative space-y-1">
+                    <div className="flex items-center gap-1.5">
                       <div
-                        className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-lg border ${colorClasses[node.color]} bg-background/80 backdrop-blur`}
+                        className={`flex h-6 w-6 shrink-0 items-center justify-center rounded-md border ${colorClasses[node.color]} bg-background/80 backdrop-blur`}
                         aria-hidden="true"
                       >
-                        <Icon className="h-4 w-4" />
+                        <Icon className="h-3 w-3" />
                       </div>
                       <div className="min-w-0 flex-1">
-                        <Badge
-                          variant="outline"
-                          className="mb-0.5 rounded-full border-border/40 bg-background/80 px-1.5 py-0 text-[9px] uppercase tracking-[0.15em] text-foreground/60"
-                        >
-                          {node.type}
-                        </Badge>
-                        <h3 className="truncate text-xs font-semibold tracking-tight text-foreground">
+                        <div className="flex items-center justify-between gap-1">
+                          <span className="text-[7px] uppercase tracking-wider text-black/30 font-bold">
+                            {node.type}
+                          </span>
+                        </div>
+                        <h3 className="truncate text-[9px] font-bold tracking-tight text-foreground leading-none">
                           {node.title}
                         </h3>
                       </div>
                     </div>
-                    <p className="line-clamp-2 text-[10px] leading-relaxed text-foreground/70">
+                    <p className="line-clamp-1 text-[8px] leading-tight text-foreground/50">
                       {node.description}
                     </p>
-                    <div className="flex items-center gap-1.5 text-[10px] text-foreground/50">
+                    <div className="flex items-center gap-1.5 text-[10px] text-black/30">
                       <ArrowRight className="h-2.5 w-2.5" aria-hidden="true" />
-                      <span className="uppercase tracking-[0.1em]">
+                      <span className="uppercase tracking-[0.1em] font-medium">
                         Connected
                       </span>
                     </div>
@@ -393,7 +503,7 @@ export function N8nWorkflowBlock() {
 
       {/* Footer Stats */}
       <div
-        className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-lg border border-border/30 bg-background/40 px-4 py-2.5 backdrop-blur-sm"
+        className="mt-4 flex flex-wrap items-center justify-between gap-3 rounded-xl border border-black/5 bg-slate-50/80 px-4 py-2.5 backdrop-blur-sm"
         role="status"
         aria-live="polite"
       >
