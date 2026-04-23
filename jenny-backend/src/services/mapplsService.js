@@ -19,11 +19,17 @@ async function findNearbyPlaces(type, lat, lng) {
       return [];
     }
 
+    // Improve keywords for transit in India
+    let searchKeywords = type;
+    if (type === "transit") {
+        searchKeywords = "bus stop, metro station, railway station, taxi stand";
+    }
+
     const response = await axios.get("https://atlas.mappls.com/api/places/nearby/json", {
       params: {
-        keywords: type,
+        keywords: searchKeywords,
         refLocation: `${lat},${lng}`,
-        radius: 3000,
+        radius: 5000, // Increased radius to 5km for transit
         key: MAPPLS_API_KEY
       }
     });
@@ -80,4 +86,39 @@ async function findNearbyPlaces(type, lat, lng) {
   }
 }
 
-module.exports = { findNearbyPlaces };
+/**
+ * Search for a specific place by name (for geocoding)
+ * @param {string} query - Place name (e.g., Gachibowli)
+ * @returns {object|null} Top result with lat/lng
+ */
+async function searchPlace(query) {
+  try {
+    const MAPPLS_API_KEY = process.env.MAPPLS_API_KEY;
+    if (!MAPPLS_API_KEY || MAPPLS_API_KEY === "your_mappls_api_key_here") return null;
+
+    const response = await axios.get("https://atlas.mappls.com/api/places/search/json", {
+      params: {
+        query: query,
+        key: MAPPLS_API_KEY
+      }
+    });
+
+    const places = response.data.suggestedLocations || [];
+    if (places.length === 0) return null;
+
+    const top = places[0];
+    return {
+      name: top.placeName,
+      lat: top.latitude,
+      lng: top.longitude
+    };
+  } catch (error) {
+    console.error("[Mappls Search] Error:", error.message);
+    // Fallback mock for common Hyderabad areas
+    if (query.toLowerCase().includes("gachibowli")) return { name: "Gachibowli", lat: 17.4401, lng: 78.3489 };
+    if (query.toLowerCase().includes("kacheguda")) return { name: "Kacheguda", lat: 17.3850, lng: 78.4867 };
+    return null;
+  }
+}
+
+module.exports = { findNearbyPlaces, searchPlace };

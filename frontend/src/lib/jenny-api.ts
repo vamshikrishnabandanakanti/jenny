@@ -5,6 +5,7 @@
 export interface JennyActionResponse {
   type: "action_response" | "text_response" | "request_location";
   message: string;
+  steps?: string[];
   whatsapp_draft?: string;
   ride_estimates?: {
     destination_name: string;

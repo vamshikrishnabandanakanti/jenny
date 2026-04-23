@@ -2,6 +2,8 @@
 
 import ScrollExpandMedia from '@/components/blocks/scroll-expansion-hero';
 
+import demoImage from './assets/demo.webp';
+
 interface MediaAbout {
   overview: string;
   conclusion: string;
@@ -18,11 +20,10 @@ interface MediaContent {
 }
 
 const videoContent: MediaContent = {
-  src: 'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYuZ5R8ahEEZ4aQK56LizRdfBSqeDMsmUIrJN1',
+  src: 'https://res.cloudinary.com/douw67vte/video/upload/v1776967911/Screen_Recording_2026-04-23_at_11.40.22_PM_vvnksn.mov',
   poster:
     'https://images.pexels.com/videos/5752729/space-earth-universe-cosmos-5752729.jpeg',
-  background:
-    'https://me7aitdbxq.ufs.sh/f/2wsMIGDMQRdYMNjMlBUYHaeYpxduXPVNwf8mnFA61L7rkcoS',
+  background: demoImage,
   title: 'See Jenny in Action',
   date: 'Multi-Agent Demo',
   scrollToExpand: 'Scroll to Explore System',

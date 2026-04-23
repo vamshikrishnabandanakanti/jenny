@@ -1,27 +1,31 @@
 import { AnimatedFeatureCard } from "@/components/ui/feature-card-1";
 
+import reactLogo from "./assets/react.png";
+import telegramLogo from "./assets/telegram.png";
+import whatsappLogo from "./assets/whatsapp.png";
+
 // Data for the feature cards
 const features = [
   {
     index: "001",
-    tag: "HEALTHIFY",
-    title: "Eat better to boost your gut health by 30s.",
-    imageSrc: "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-79XLKwCuOZGHdVcOlEApISx6x2nVd2.png&w=1000&q=75",
-    color: "orange" as const,
+    tag: "WEB APP",
+    title: "Access Jenny's multi-agent recovery system through any modern web browser.",
+    imageSrc: reactLogo,
+    color: "blue" as const,
   },
   {
     index: "002",
-    tag: "DETANE",
-    title: "Avoid Chemicals to have a longer lifespan.",
-    imageSrc: "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-DtOMYxIaV2eptIhXTkorEzdNzhlgXK.png&w=1000&q=75",
+    tag: "TELEGRAM",
+    title: "Connect with Jenny's panic agents directly for instant crisis support.",
+    imageSrc: telegramLogo,
     color: "purple" as const,
   },
   {
     index: "003",
-    tag: "MEDITATE",
-    title: "Quick Calm Sessions that unlock your potential.",
-    imageSrc: "https://www.thiings.co/_next/image?url=https%3A%2F%2Flftz25oez4aqbxpq.public.blob.vercel-storage.com%2Fimage-eDCSln4vQRsBBiP3mWirJOXYDyFO6q.png&w=1000&q=75",
-    color: "blue" as const,
+    tag: "WHATSAPP",
+    title: "Receive emergency updates and actionable recovery plans via WhatsApp.",
+    imageSrc: whatsappLogo,
+    color: "orange" as const,
   },
 ];
 

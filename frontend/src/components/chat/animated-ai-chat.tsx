@@ -157,6 +157,7 @@ interface Message {
     id: string;
     role: "user" | "assistant";
     content: string;
+    steps?: string[];
     whatsappDraft?: string;
     rideEstimates?: {
         destination_name: string;
@@ -316,6 +317,7 @@ export function AnimatedAIChat() {
                 id: (Date.now() + 1).toString(),
                 role: "assistant",
                 content: jennyData.message || "I don't know what to say.",
+                steps: jennyData.steps,
                 whatsappDraft: jennyData.whatsapp_draft,
                 rideEstimates: jennyData.ride_estimates,
                 actionData: Array.isArray(jennyData.data) ? jennyData.data : (jennyData.data?.places || undefined),
@@ -452,6 +454,35 @@ export function AnimatedAIChat() {
                                     ) : (
                                         renderMarkdown(message.content)
                                     )}
+                                    {/* Recovery Plan Steps */}
+                                    {message.steps && message.steps.length > 0 && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 0.4, duration: 0.4 }}
+                                            className="mt-4 bg-white/[0.04] backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-xl w-full"
+                                        >
+                                            <div className="text-violet-300 font-semibold text-[13px] mb-3 flex items-center gap-2">
+                                                <span>📋</span> Recovery Plan
+                                            </div>
+                                            <div className="space-y-2">
+                                                {message.steps.map((step, i) => (
+                                                    <motion.div
+                                                        key={i}
+                                                        initial={{ opacity: 0, x: -8 }}
+                                                        animate={{ opacity: 1, x: 0 }}
+                                                        transition={{ delay: 0.5 + i * 0.1 }}
+                                                        className="flex items-start gap-3 text-[13px] text-white/80 leading-relaxed"
+                                                    >
+                                                        <span className="flex-shrink-0 w-6 h-6 rounded-full bg-violet-500/20 text-violet-300 flex items-center justify-center text-[11px] font-bold mt-0.5">
+                                                            {i + 1}
+                                                        </span>
+                                                        <span>{step}</span>
+                                                    </motion.div>
+                                                ))}
+                                            </div>
+                                        </motion.div>
+                                    )}
                                     {message.actionData && message.actionData.length > 0 && (
                                         <motion.div
                                             initial={{ opacity: 0, y: 10 }}
@@ -543,37 +574,66 @@ export function AnimatedAIChat() {
                                             transition={{ delay: 0.9, duration: 0.4 }}
                                             className="mt-4 bg-white/[0.04] backdrop-blur-md border border-white/10 rounded-xl p-4 shadow-xl w-full"
                                         >
-                                            <div className="text-white/90 font-medium text-[14px] mb-4 text-center">Travel Estimates to {message.rideEstimates.destination_name}</div>
+                                            <div className="text-white/90 font-medium text-[14px] mb-4 text-center">🚕 Travel Options to {message.rideEstimates.destination_name}</div>
                                             <div className="grid grid-cols-2 gap-3 mb-5">
                                                 <div className="bg-white/5 rounded-lg p-3 flex flex-col gap-1 border border-white/5 items-center text-center">
                                                     <div className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Walk 🚶</div>
-                                                    <div className="text-white font-semibold text-sm">{message.rideEstimates.walk.time_mins} mins</div>
+                                                    <div className="text-white font-semibold text-sm">~{message.rideEstimates.walk.time_mins} mins</div>
                                                     <div className="text-green-400 text-[11px] font-medium">Free</div>
                                                 </div>
                                                 <div className="bg-white/5 rounded-lg p-3 flex flex-col gap-1 border border-white/5 items-center text-center">
-                                                    <div className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Bike 🏍️</div>
-                                                    <div className="text-white font-semibold text-sm">{message.rideEstimates.bike.time_mins} mins</div>
+                                                    <div className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Rapido 🏍️</div>
+                                                    <div className="text-white font-semibold text-sm">~{message.rideEstimates.bike.time_mins} mins</div>
                                                     <div className="text-white/80 text-[11px]">~₹{message.rideEstimates.bike.cost}</div>
                                                 </div>
                                                 <div className="bg-white/5 rounded-lg p-3 flex flex-col gap-1 border border-white/5 items-center text-center">
-                                                    <div className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Cab 🚕</div>
-                                                    <div className="text-white font-semibold text-sm">{message.rideEstimates.cab.time_mins} mins</div>
+                                                    <div className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Ola/Uber 🚕</div>
+                                                    <div className="text-white font-semibold text-sm">~{message.rideEstimates.cab.time_mins} mins</div>
                                                     <div className="text-white/80 text-[11px]">~₹{message.rideEstimates.cab.cost}</div>
                                                 </div>
                                                 <div className="bg-white/5 rounded-lg p-3 flex flex-col gap-1 border border-white/5 items-center text-center">
                                                     <div className="text-white/60 text-[10px] font-bold uppercase tracking-wider">Bus 🚌</div>
-                                                    <div className="text-white font-semibold text-sm">{message.rideEstimates.bus.time_mins} mins</div>
+                                                    <div className="text-white font-semibold text-sm">~{message.rideEstimates.bus.time_mins} mins</div>
                                                     <div className="text-white/80 text-[11px]">~₹{message.rideEstimates.bus.cost}</div>
                                                 </div>
                                             </div>
-                                            <a
-                                                href={`https://www.rapido.bike/`}
-                                                target="_blank"
-                                                rel="noreferrer"
-                                                className="w-full flex items-center justify-center gap-2 bg-[#F9C935] hover:bg-[#F9C935]/90 text-black px-4 py-3 rounded-xl text-sm font-bold transition-colors shadow-lg"
-                                            >
-                                                Book Rapido Ride
-                                            </a>
+                                            {/* Booking Buttons */}
+                                            <div className="grid grid-cols-2 gap-2 mb-2">
+                                                <a
+                                                    href={`https://book.olacabs.com/?drop_lat=${message.rideEstimates.drop_lat}&drop_lng=${message.rideEstimates.drop_lng}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="flex items-center justify-center gap-2 bg-[#1A8D1A] hover:bg-[#158015] text-white px-3 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg"
+                                                >
+                                                    🚗 Book Ola
+                                                </a>
+                                                <a
+                                                    href={`https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${message.rideEstimates.drop_lat}&dropoff[longitude]=${message.rideEstimates.drop_lng}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="flex items-center justify-center gap-2 bg-black hover:bg-gray-900 text-white px-3 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg border border-white/10"
+                                                >
+                                                    🚕 Book Uber
+                                                </a>
+                                            </div>
+                                            <div className="grid grid-cols-2 gap-2">
+                                                <a
+                                                    href="https://www.rapido.bike/"
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="flex items-center justify-center gap-2 bg-[#F9C935] hover:bg-[#F9C935]/90 text-black px-3 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg"
+                                                >
+                                                    🏍️ Book Rapido
+                                                </a>
+                                                <a
+                                                    href={`https://www.google.com/maps/dir/?api=1&destination=${message.rideEstimates.drop_lat},${message.rideEstimates.drop_lng}`}
+                                                    target="_blank"
+                                                    rel="noreferrer"
+                                                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg"
+                                                >
+                                                    🗺️ Google Maps
+                                                </a>
+                                            </div>
                                         </motion.div>
                                     )}
                                     {message.responseType === "request_location" && (

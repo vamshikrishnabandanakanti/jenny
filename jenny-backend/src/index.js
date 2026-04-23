@@ -10,6 +10,7 @@ const morgan     = require("morgan");
 const rateLimit  = require("express-rate-limit");
 const apiRoutes  = require("./routes/api");
 const actionChatRoutes = require("./routes/chat");
+const { initTelegramBot } = require("./services/telegramService");
 
 const app  = express();
 const PORT = process.env.PORT || 3001;
@@ -97,6 +98,9 @@ app.listen(PORT, () => {
   → POST http://localhost:${PORT}/api/analyze
   → GET  http://localhost:${PORT}/api/health
   `);
+
+  // Initialize Telegram Bot
+  initTelegramBot();
 });
 
 module.exports = app;

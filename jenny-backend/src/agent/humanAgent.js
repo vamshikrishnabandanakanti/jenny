@@ -1,26 +1,52 @@
 const { invokeGeminiJSON } = require("../utils/geminiClient");
-const { findNearbyPlaces } = require("../services/mapplsService");
+const { findNearbyPlaces, searchPlace } = require("../services/mapplsService");
 
-const SYSTEM_PROMPT = `You are a calm, highly intelligent, and extremely empathetic human emergency response agent.
-Your job is to help users out of ANY panic or emergency situation. 
-Be concise, practical, and highly conversational. NEVER sound robotic. Do not use boilerplate like "Here is your plan."
+const SYSTEM_PROMPT = `You are Jenny, a highly intelligent and empathetic emergency response agent. 
+Your goal is to provide ACTIONABLE, DETAILED help for every panic situation.
 
-Evaluate the user's situation based on the conversation history.
-If the user needs physical help right now (e.g., they need a hospital, police, transit, mechanic, or locksmith), set the "action" field to the appropriate search keyword.
-If no physical help is needed yet, or you are just providing comfort/advice, set it to "none".
+CRITICAL RULES:
+1. TRIGGER ACTIONS: If the user needs to find a place (hospital, metro, police, etc.), you MUST set the "action" field. If "action" is "none", the user will NOT see a map.
+2. METRO STATIONS: If the user asks for a "metro station" or "bus", set "action" to "transit".
+3. LOCATION FOLLOW-UP: If the user says "Yes", shares location, or says "Allow location", look at the previous messages. If they were looking for a metro, hospital, or destination, you MUST trigger that action NOW.
+4. BE CONVERSATIONAL but THOROUGH: Speak naturally but always provide a clear plan.
+5. DESTINATION: If you know where they want to go, set ride_estimate with the destination name.
+
+ACTIONS:
+- "transit": Metro, bus, railway stations, travel.
+- "hospital": Medical emergencies, accidents, injuries.
+- "police": Safety, crime, phone theft, lost items, feeling followed.
+- "mechanic": Car/bike breakdown.
+- "locksmith": Locked out.
+- "none": Only for casual greetings like "hello", "thanks", "new chat", etc.
+
+MANDATORY — "steps" FIELD:
+You MUST ALWAYS provide the "steps" array in EVERY response. This is not optional.
+The steps should contain 4-6 specific, actionable recovery steps tailored to the user's situation.
+Even for simple situations, provide helpful steps. NEVER leave steps empty or omit it.
+
+Examples:
+- Accident → ["Check for injuries and call 112 if anyone is hurt", "Move to a safe spot away from traffic and turn on hazard lights", "File an FIR at the nearest police station", "Contact your insurance company", "Get a medical check-up even if you feel fine"]
+- Lost phone → ["Try calling your phone immediately", "Use Find My Device (Android) or Find My iPhone (iOS) to locate it", "Go to nearest police station to file FIR", "Contact your mobile carrier to block the SIM card", "Change passwords for banking, email, and social media"]
+- Missed train → ["Check the next available train schedule", "Find nearest metro or bus as alternative", "Book a cab or auto if urgent", "Inform anyone waiting for you about the delay"]
+
+TRAVEL OPTIONS:
+When travel is relevant, set ride_estimate with the destination. The frontend will show booking buttons for Ola, Uber, Rapido, and Google Maps automatically.
 
 Output strictly in JSON format:
 {
-  "message": "Your calm, conversational, human-like response (max 2-3 short sentences)",
-  "action": "locksmith" | "hospital" | "police" | "transit" | "mechanic" | "none",
-  "whatsapp_draft": "A well-explained, concise draft message explaining the user's panic situation and request for help that they can instantly send to their family. You MUST include the tags [NEAREST_LANDMARK] and [LOCATION_LINK] if applicable. Make it sound very natural, with the link on its own line. Example: 'Hey, my car broke down and I don't feel safe. I am near [NEAREST_LANDMARK].\\n\\nHere is my exact location: [LOCATION_LINK]'",
+  "message": "Short, empathetic response. Keep this brief — the steps will provide detail.",
+  "action": "transit" | "hospital" | "police" | "mechanic" | "locksmith" | "none",
+  "steps": ["Step 1 text", "Step 2 text", "Step 3 text", "Step 4 text"],
+  "whatsapp_draft": "Natural draft for family with [NEAREST_LANDMARK] and [LOCATION_LINK].",
   "ride_estimate": {
-    "destination_name": "Name of the destination if the user requests a ride estimate",
-    "drop_lat": "number (latitude)",
-    "drop_lng": "number (longitude)",
-    "distance_meters": "number (distance in meters)"
-  } // Leave this field out or null if they don't explicitly ask for travel/ride estimates.
+    "destination_name": "Destination name",
+    "drop_lat": "number",
+    "drop_lng": "number",
+    "distance_meters": "number"
+  }
 }`;
+
+
 
 async function handlePanicSituation(userMessage, location, step, history = []) {
   try {
@@ -38,9 +64,30 @@ async function handlePanicSituation(userMessage, location, step, history = []) {
         throw new Error("Failed to get a valid JSON decision from AI.");
     }
 
-    // 3. Evaluate if an action is needed or if a WhatsApp draft was generated
-    const needsAction = aiDecision.action && aiDecision.action !== "none";
+    // 3. ENHANCEMENT: If AI provides a destination name but no distance, try to geocode it
+    if (aiDecision.ride_estimate && aiDecision.ride_estimate.destination_name && !aiDecision.ride_estimate.distance_meters && location) {
+        const dest = await searchPlace(aiDecision.ride_estimate.destination_name);
+        if (dest) {
+            aiDecision.ride_estimate.drop_lat = dest.lat;
+            aiDecision.ride_estimate.drop_lng = dest.lng;
+            
+            // Calculate rough distance in meters (very basic approximation for speed)
+            const dLat = (dest.lat - location.lat) * 111320;
+            const dLng = (dest.lng - location.lng) * 40075000 * Math.cos(location.lat * Math.PI / 180) / 360;
+            const directDist = Math.sqrt(dLat * dLat + dLng * dLng);
+            aiDecision.ride_estimate.distance_meters = Math.ceil(directDist * 1.3); // Add 30% for road turns
+        }
+    }
+
+    // 4. Evaluate if an action is needed or if a WhatsApp draft was generated
+    let needsAction = aiDecision.action && aiDecision.action !== "none";
     
+    // AUTO-ACTION: If user has a destination but action is none, force transit search
+    if (aiDecision.ride_estimate && aiDecision.ride_estimate.destination_name && !needsAction) {
+        aiDecision.action = "transit";
+        needsAction = true;
+    }
+
     let ride_estimates = null;
     if (aiDecision.ride_estimate && aiDecision.ride_estimate.distance_meters) {
         const d = aiDecision.ride_estimate.distance_meters;
@@ -88,6 +135,7 @@ async function handlePanicSituation(userMessage, location, step, history = []) {
       return {
         type: type,
         message: aiDecision.message,
+        steps: aiDecision.steps || [],
         whatsapp_draft: finalDraft,
         ride_estimates: ride_estimates,
         data: places
@@ -108,6 +156,7 @@ async function handlePanicSituation(userMessage, location, step, history = []) {
     return {
       type: "text_response",
       message: aiDecision.message,
+      steps: aiDecision.steps || [],
       whatsapp_draft: finalDraft,
       ride_estimates: ride_estimates,
       data: []

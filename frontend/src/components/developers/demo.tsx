@@ -7,30 +7,30 @@ import mahesh from './pics/mahesh.jpeg';
 const testimonials = [
   {
     quote:
-      "Passionate about building intuitive and scalable AI-driven experiences. Focused on frontend performance and cinematic user interfaces.",
+      "I’m the creator behind Jenny, combining frontend and backend engineering with visual design and creativity to build immersive, human-centered digital experiences.",
     name: "Vamshi",
-    designation: "Software Engineer",
+    designation: "Team Lead - Jenny",
     src: vamshi,
   },
   {
     quote:
-      "Expert in backend orchestration and multi-agent systems. Ensuring Jenny handles complex panic recovery scenarios with 100% reliability.",
+      "Focused on building reliable backend systems, I design and manage APIs, data flow, and performance to ensure Jenny responds quickly and scales smoothly under real-world conditions.",
     name: "Hanuman",
-    designation: "Software Engineer",
+    designation: "Technical Lead - Jenny",
     src: hanuman,
   },
   {
     quote:
-      "Dedicated to architecting robust recovery systems and real-time response optimizations for critical user safety.",
+      "A researcher behind Jenny AI, focused on studying panic situations and gathering data to improve AI-driven responses.",
     name: "Raman",
-    designation: "Software Engineer",
+    designation: "AI Researcher - Jenny",
     src: raman,
   },
   {
     quote:
-      "Specialized in deep system integration and ensuring seamless communication between specialized AI agents.",
+      "I support Jenny AI by coordinating efforts, conducting tests, and ensuring smooth system operations.",
     name: "Mahesh",
-    designation: "Software Engineer",
+    designation: "Operations Lead - Jenny",
     src: mahesh,
   },
 ];

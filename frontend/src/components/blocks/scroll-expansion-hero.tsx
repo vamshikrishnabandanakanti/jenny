@@ -75,14 +75,14 @@ const ScrollExpandMedia = ({
       } else if (!mediaFullyExpandedRef.current) {
         // If we are at the very beginning and scrolling up, don't hijack
         if (scrollProgressRef.current <= 0 && e.deltaY < 0) return;
-        
+
         if (e.cancelable) e.preventDefault();
         const scrollDelta = e.deltaY * 0.002; // Increased sensitivity
         const newProgress = Math.min(
           Math.max(scrollProgressRef.current + scrollDelta, 0),
           1
         );
-        
+
         setScrollProgress(newProgress);
 
         if (newProgress >= 1) {
@@ -103,7 +103,7 @@ const ScrollExpandMedia = ({
 
       const touchY = e.touches[0].clientY;
       const deltaY = touchStartYRef.current - touchY;
-      
+
       const container = document.querySelector('main') || window;
       const scrollTop = container instanceof HTMLElement ? container.scrollTop : window.scrollY;
 
@@ -182,8 +182,8 @@ const ScrollExpandMedia = ({
           <motion.div
             className='absolute inset-0 z-0 h-full'
             initial={{ opacity: 0, filter: "blur(0px)", scale: 1 }}
-            animate={{ 
-              opacity: 1, 
+            animate={{
+              opacity: 1,
               filter: `blur(${scrollProgress * 15}px)`,
               scale: 1 + (scrollProgress * 0.05)
             }}
@@ -219,11 +219,11 @@ const ScrollExpandMedia = ({
                         src={
                           mediaSrc.includes('embed')
                             ? mediaSrc +
-                              (mediaSrc.includes('?') ? '&' : '?') +
-                              'autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&disablekb=1&modestbranding=1'
+                            (mediaSrc.includes('?') ? '&' : '?') +
+                            'autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&disablekb=1&modestbranding=1'
                             : mediaSrc.replace('watch?v=', 'embed/') +
-                              '?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&disablekb=1&modestbranding=1&playlist=' +
-                              mediaSrc.split('v=')[1]
+                            '?autoplay=1&mute=1&loop=1&controls=0&showinfo=0&rel=0&disablekb=1&modestbranding=1&playlist=' +
+                            mediaSrc.split('v=')[1]
                         }
                         className='w-full h-full rounded-xl'
                         frameBorder='0'
@@ -308,21 +308,25 @@ const ScrollExpandMedia = ({
               </div>
 
               <div
-                className={`flex items-center justify-center text-center gap-4 w-full relative z-10 transition-none flex-col ${
-                  textBlend ? 'mix-blend-difference' : 'mix-blend-normal'
-                }`}
+                className={`flex items-center justify-center text-center gap-4 w-full relative z-10 transition-none flex-col ${textBlend ? 'mix-blend-difference' : 'mix-blend-normal'
+                  }`}
               >
                 <motion.h2
-                  className='text-4xl md:text-5xl lg:text-6xl font-bold text-black transition-none'
+                  className='text-4xl md:text-5xl lg:text-6xl font-black text-gray-500 transition-none'
                   style={{ transform: `translateX(-${textTranslateX}vw)` }}
                 >
                   {firstWord}
                 </motion.h2>
                 <motion.h2
-                  className='text-4xl md:text-5xl lg:text-6xl font-bold text-center text-black transition-none'
+                  className='text-4xl md:text-5xl lg:text-6xl font-black text-center text-sky-500 transition-none'
                   style={{ transform: `translateX(${textTranslateX}vw)` }}
                 >
-                  {restOfTitle}
+                  {restOfTitle.includes('Jenny') ? (
+                    <>
+                      <span className="text-sky-500">Jenny</span>
+                      {restOfTitle.replace('Jenny', '')}
+                    </>
+                  ) : restOfTitle}
                 </motion.h2>
               </div>
             </div>
