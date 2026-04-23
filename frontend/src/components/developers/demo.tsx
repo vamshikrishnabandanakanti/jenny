@@ -1,43 +1,50 @@
-
 import { CircularTestimonials } from '@/components/ui/circular-testimonials';
+import vamshi from './pics/vamshi.png';
+import hanuman from './pics/hanuman.jpeg';
+import raman from './pics/raman.jpeg';
+import mahesh from './pics/mahesh.jpeg';
 
 const testimonials = [
   {
     quote:
-      "I was impressed by the food! And I could really tell that they use high-quality ingredients. The staff was friendly and attentive. I'll definitely be back for more!",
-    name: "Tamar Mendelson",
-    designation: "Restaurant Critic",
-    src:
-      "https://images.unsplash.com/photo-1512316609839-ce289d3eba0a?q=80&w=1368&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D",
+      "Passionate about building intuitive and scalable AI-driven experiences. Focused on frontend performance and cinematic user interfaces.",
+    name: "Vamshi",
+    designation: "Software Engineer",
+    src: vamshi,
   },
   {
     quote:
-      "This place exceeded all expectations! The atmosphere is inviting, and the staff truly goes above and beyond. I'll keep returning for more exceptional dining experience.",
-    name: "Joe Charlescraft",
-    designation: "Frequent Visitor",
-    src:
-      "https://images.unsplash.com/photo-1628749528992-f5702133b686?q=80&w=1368&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D",
+      "Expert in backend orchestration and multi-agent systems. Ensuring Jenny handles complex panic recovery scenarios with 100% reliability.",
+    name: "Hanuman",
+    designation: "Software Engineer",
+    src: hanuman,
   },
   {
     quote:
-      "Shining Yam is a hidden gem! The impeccable service and overall attention to detail created a memorable experience. I highly recommend it!",
-    name: "Martina Edelweist",
-    designation: "Satisfied Customer",
-    src:
-      "https://images.unsplash.com/photo-1524267213992-b76e8577d046?q=80&w=1368&auto=format&fit=crop&ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fA%3D%3D",
+      "Dedicated to architecting robust recovery systems and real-time response optimizations for critical user safety.",
+    name: "Raman",
+    designation: "Software Engineer",
+    src: raman,
+  },
+  {
+    quote:
+      "Specialized in deep system integration and ensuring seamless communication between specialized AI agents.",
+    name: "Mahesh",
+    designation: "Software Engineer",
+    src: mahesh,
   },
 ];
 
 export const CircularTestimonialsDemo = () => (
-  <section className="flex flex-col items-center justify-center min-h-[calc(100vh-160px)]">
+  <section className="flex flex-col items-center justify-center min-h-[calc(100vh-160px)] px-4 md:px-8">
     {/* Light testimonials section on white background */}
-    <div className="bg-slate-50/50 md:bg-slate-50 p-10 md:p-20 rounded-[2rem] w-full max-w-6xl flex items-center justify-center relative overflow-hidden shadow-xl border border-slate-100">
+    <div className="bg-slate-50/50 md:bg-slate-50 p-4 sm:p-10 md:p-20 rounded-[2rem] w-full max-w-6xl flex items-center justify-center relative overflow-hidden shadow-xl border border-slate-100">
       <div
         className="w-full max-w-7xl flex items-center justify-center relative"
       >
         <CircularTestimonials
           testimonials={testimonials}
-          autoplay={true}
+          autoplay={false}
           colors={{
             name: "#0a0a0a",
             designation: "#454545",
@@ -47,9 +54,9 @@ export const CircularTestimonialsDemo = () => (
             arrowHoverBackground: "#00A6FB",
           }}
           fontSizes={{
-            name: "28px",
-            designation: "20px",
-            quote: "20px",
+            name: "clamp(14px, 3vw, 28px)",
+            designation: "clamp(12px, 2vw, 20px)",
+            quote: "clamp(12px, 2vw, 20px)",
           }}
         />
       </div>

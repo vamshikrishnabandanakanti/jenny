@@ -4,12 +4,11 @@
 
 const express = require("express");
 const router = express.Router();
-const { detectIntent } = require("../agent/intentDetector");
-const { processDecision } = require("../agent/decisionEngine");
+const { handlePanicSituation } = require("../agent/humanAgent");
 
 router.post("/", async (req, res) => {
   try {
-    const { message, location } = req.body;
+    const { message, location, step = 1, history = [] } = req.body;
 
     if (!message) {
       return res.status(400).json({ 
@@ -18,19 +17,15 @@ router.post("/", async (req, res) => {
       });
     }
 
-    console.log(`[Action Chat] Received message: "${message.substring(0, 50)}..."`);
+    console.log(`[Action Chat] Step: ${step} | History length: ${history.length}`);
     if (location) {
-      console.log(`[Action Chat] Location provided: ${location.lat}, ${location.lng}`);
+      console.log("Incoming location:", location);
     }
 
-    // 1. Detect Intent
-    const intent = await detectIntent(message);
-    console.log(`[Action Chat] Detected Intent: ${intent}`);
-
-    // 2. Process Decision (Action)
-    const responsePayload = await processDecision(intent, location);
+    // 1. Delegate entirely to the Universal Human Agent
+    const responsePayload = await handlePanicSituation(message, location, step, history);
     
-    // 3. Return strictly formatted JSON
+    // 2. Return strictly formatted JSON
     return res.json(responsePayload);
 
   } catch (error) {
@@ -38,7 +33,7 @@ router.post("/", async (req, res) => {
     return res.status(500).json({
       type: "text_response",
       message: "An internal server error occurred while processing your request.",
-      data: {}
+      data: []
     });
   }
 });

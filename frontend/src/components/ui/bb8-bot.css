@@ -1,0 +1,337 @@
+.bb8-wrapper {
+  --toggle-size: 18px; /* Slightly bigger for better presence */
+  --bb8-diameter: 4.375em;
+  --transition: 0.4s;
+  --accent: #de7d2f;
+  --bb8-bg: #fff;
+  --radius: 99em;
+  
+  font-size: var(--toggle-size);
+  position: fixed;
+  bottom: 50px;
+  right: 50px;
+  z-index: 1000;
+  pointer-events: auto; /* Allow hover interactions */
+  cursor: pointer;
+  filter: drop-shadow(0 10px 15px rgba(0,0,0,0.1));
+  transition: transform 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+}
+
+.bb8-wrapper:hover {
+  transform: scale(1.15);
+}
+
+.bb8-tag {
+  position: absolute;
+  top: -65px;
+  right: 0;
+  background: white;
+  color: black;
+  padding: 10px 18px;
+  border-radius: 20px;
+  font-weight: 600;
+  font-size: 14px;
+  white-space: nowrap;
+  box-shadow: 0 10px 30px rgba(0,0,0,0.12);
+  opacity: 0;
+  transform: translateY(15px) scale(0.9);
+  transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+  pointer-events: none;
+  border: 1px solid rgba(0,0,0,0.08);
+  z-index: 10;
+}
+
+.bb8-tag::after {
+  content: "";
+  position: absolute;
+  bottom: -6px;
+  right: 25px;
+  width: 12px;
+  height: 12px;
+  background: white;
+  transform: rotate(45deg);
+  border-right: 1px solid rgba(0,0,0,0.08);
+  border-bottom: 1px solid rgba(0,0,0,0.08);
+}
+
+.bb8-wrapper:hover .bb8-tag {
+  opacity: 1;
+  transform: translateY(0) scale(1);
+}
+
+.bb8-wrapper::after {
+  content: "";
+  position: absolute;
+  width: 1.5em;
+  height: 3px;
+  background: rgba(0,0,0,0.3);
+  bottom: 8%;
+  left: 50%;
+  transform: translateX(-50%);
+  filter: blur(1.5px);
+  border-radius: 50%;
+  z-index: 1;
+  transition: var(--transition);
+}
+
+.bb8-wrapper:hover .bb8 {
+  animation: bb8-wobble 0.5s ease-in-out;
+}
+
+@keyframes bb8-wobble {
+  0%, 100% { transform: rotate(0); }
+  25% { transform: rotate(-5deg); }
+  75% { transform: rotate(5deg); }
+}
+
+.bb8-wrapper *,
+.bb8-wrapper *::before,
+.bb8-wrapper *::after {
+  box-sizing: border-box;
+}
+
+.bb8 {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  transition: var(--transition);
+  animation: bb8-float 4s ease-in-out infinite;
+}
+
+@keyframes bb8-float {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-6px); }
+}
+
+.bb8__head-container {
+  position: relative;
+  transition: 0.1s ease-out; /* Faster for mouse tracking */
+  z-index: 2;
+  transform-origin: 1.25em 3.75em;
+}
+
+.bb8__head {
+  overflow: hidden;
+  margin-bottom: -0.188em;
+  width: 2.5em;
+  height: 1.688em;
+  background: linear-gradient(
+        transparent 0.063em,
+        dimgray 0.063em 0.313em,
+        transparent 0.313em 0.375em,
+        var(--accent) 0.375em 0.5em,
+        transparent 0.5em 1.313em,
+        silver 1.313em 1.438em,
+        transparent 1.438em
+      ),
+      linear-gradient(45deg, transparent 0.188em, var(--bb8-bg) 0.188em 1.25em, transparent
+            1.25em),
+      linear-gradient(135deg, transparent 0.188em, var(--bb8-bg) 0.188em 1.25em, transparent
+            1.25em),
+      linear-gradient(var(--bb8-bg) 1.25em, transparent 1.25em);
+  border-radius: var(--radius) var(--radius) 0 0;
+  position: relative;
+  z-index: 1;
+  filter: drop-shadow(0 0.063em 0.125em gray);
+}
+
+.bb8__head::before {
+  content: "";
+  position: absolute;
+  width: 0.563em;
+  height: 0.563em;
+  background: radial-gradient(
+        0.125em circle at 0.25em 0.375em,
+        red,
+        transparent
+      ),
+      radial-gradient(
+        0.063em circle at 0.375em 0.188em,
+        var(--bb8-bg) 50%,
+        transparent 100%
+      ),
+      linear-gradient(45deg, #000 0.188em, dimgray 0.313em 0.375em, #000 0.5em);
+  border-radius: var(--radius);
+  top: 0.413em;
+  left: 50%;
+  transform: translate(-50%);
+  box-shadow: 0 0 0 0.089em lightgray, 0.563em 0.281em 0 -0.148em,
+    0.563em 0.281em 0 -0.1em var(--bb8-bg), 0.563em 0.281em 0 -0.063em;
+  z-index: 1;
+  transition: var(--transition);
+}
+
+.bb8__head::after {
+  content: "";
+  position: absolute;
+  bottom: 0.375em;
+  left: 0;
+  width: 100%;
+  height: 0.188em;
+  background: linear-gradient(
+      to right,
+      var(--accent) 0.125em,
+      transparent 0.125em 0.188em,
+      var(--accent) 0.188em 0.313em,
+      transparent 0.313em 0.375em,
+      var(--accent) 0.375em 0.938em,
+      transparent 0.938em 1em,
+      var(--accent) 1em 1.125em,
+      transparent 1.125em 1.875em,
+      var(--accent) 1.875em 2em,
+      transparent 2em 2.063em,
+      var(--accent) 2.063em 2.25em,
+      transparent 2.25em 2.313em,
+      var(--accent) 2.313em 2.375em,
+      transparent 2.375em 2.438em,
+      var(--accent) 2.438em
+    );
+  transition: var(--transition);
+}
+
+.bb8__antenna {
+  position: absolute;
+  transform: translateY(-90%);
+  width: 0.059em;
+  border-radius: var(--radius) var(--radius) 0 0;
+  transition: var(--transition);
+}
+
+.bb8__antenna:nth-child(1) {
+  height: 0.938em;
+  right: 0.938em;
+  background: linear-gradient(#000 0.188em, silver 0.188em);
+}
+
+.bb8__antenna:nth-child(2) {
+  height: 0.375em;
+  left: 50%;
+  transform: translate(-50%, -90%);
+  background: silver;
+}
+
+.bb8__body {
+  width: 4.375em;
+  height: 4.375em;
+  background: var(--bb8-bg);
+  border-radius: var(--radius);
+  position: relative;
+  overflow: hidden;
+  transition: var(--transition);
+  z-index: 1;
+  transform: rotate(45deg);
+  box-shadow: inset -5px -5px 15px rgba(0,0,0,0.05), 
+              inset 5px 5px 15px rgba(255,255,255,0.8);
+  background: linear-gradient(
+        -90deg,
+        var(--bb8-bg) 4%,
+        var(--accent) 4% 10%,
+        transparent 10% 90%,
+        var(--accent) 90% 96%,
+        var(--bb8-bg) 96%
+      ),
+      linear-gradient(
+        var(--bb8-bg) 4%,
+        var(--accent) 4% 10%,
+        transparent 10% 90%,
+        var(--accent) 90% 96%,
+        var(--bb8-bg) 96%
+      ),
+      linear-gradient(
+        to right,
+        transparent 2.156em,
+        silver 2.156em 2.219em,
+        transparent 2.188em
+      ),
+      linear-gradient(
+        transparent 2.156em,
+        silver 2.156em 2.219em,
+        transparent 2.188em
+      ),
+      var(--bb8-bg);
+}
+
+.bb8__body::after {
+  content: "";
+  bottom: 1.5em;
+  left: 0.563em;
+  position: absolute;
+  width: 0.188em;
+  height: 0.188em;
+  background: rgb(236, 236, 236);
+  color: rgb(236, 236, 236);
+  border-radius: 50%;
+  box-shadow: 0.875em 0.938em, 0 -1.25em, 0.875em -2.125em, 2.125em -2.125em,
+    3.063em -1.25em, 3.063em 0, 2.125em 0.938em;
+}
+
+.bb8__body::before {
+  content: "";
+  width: 2.625em;
+  height: 2.625em;
+  position: absolute;
+  border-radius: 50%;
+  z-index: 0.1;
+  overflow: hidden;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  border: 0.313em solid var(--accent);
+  background: radial-gradient(
+        1em circle at center,
+        rgb(236, 236, 236) 50%,
+        transparent 51%
+      ),
+      radial-gradient(1.25em circle at center, var(--bb8-bg) 50%, transparent 51%),
+      linear-gradient(
+        -90deg,
+        transparent 42%,
+        var(--accent) 42% 58%,
+        transparent 58%
+      ),
+      linear-gradient(var(--bb8-bg) 42%, var(--accent) 42% 58%, var(--bb8-bg) 58%);
+}
+
+.artificial__hidden {
+  position: absolute;
+  border-radius: inherit;
+  inset: 0;
+  pointer-events: none;
+  overflow: hidden;
+  height: 120%; /* Allow space for shadow */
+  top: -10%;
+}
+
+.bb8__shadow {
+  content: "";
+  width: var(--bb8-diameter);
+  height: 15%;
+  border-radius: 50%;
+  background: radial-gradient(ellipse at center, rgba(0,0,0,0.2) 0%, transparent 80%);
+  position: absolute;
+  bottom: 8%;
+  left: 0;
+  transition: var(--transition);
+  z-index: 1;
+  animation: shadow-pulse 4s ease-in-out infinite;
+}
+
+@keyframes shadow-pulse {
+  0%, 100% { transform: scale(1) opacity(0.2); }
+  50% { transform: scale(0.8) opacity(0.1); }
+}
+@media (max-width: 768px) {
+  .bb8-wrapper {
+    --toggle-size: 12px;
+    bottom: 20px;
+    right: 20px;
+  }
+  
+  .bb8-tag {
+    font-size: 12px;
+    padding: 8px 14px;
+    top: -55px;
+  }
+}

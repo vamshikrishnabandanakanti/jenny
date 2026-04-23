@@ -6,6 +6,7 @@ import WorkflowDemo from "@/components/workflow/demo"
 import FeatureCardDemo from "@/components/platforms/demo"
 import { AnimatedAIChat } from "@/components/chat/animated-ai-chat"
 import { DarkGradientBackground } from "@/components/chat/dark-gradient-background"
+import { BB8Bot } from "@/components/ui/bb8-bot"
 import { motion, AnimatePresence } from "framer-motion"
 
 function App() {
@@ -15,12 +16,30 @@ function App() {
   const [activePage, setActivePage] = useState("home")
   const containerRef = useRef<HTMLDivElement>(null)
   const isScrolling = useRef(false)
-  
+
   // Timeout refs to handle rapid clicking flawlessly
   const homeTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const demoTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const scrollTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null)
-  
+
+  const isChatPage = typeof window !== 'undefined' && window.location.search.includes("page=chat");
+
+  if (isChatPage) {
+    return (
+      <motion.main
+        initial={{ opacity: 0, filter: "blur(10px)" }}
+        animate={{ opacity: 1, filter: "blur(0px)" }}
+        transition={{ duration: 1.2, ease: [0.16, 1, 0.3, 1] }}
+        className="w-full h-screen relative bg-[#0A0A0B] text-white"
+      >
+        <DarkGradientBackground />
+        <div className="relative z-10 h-full w-full pt-10">
+          <AnimatedAIChat />
+        </div>
+      </motion.main>
+    );
+  }
+
 
   const allNavItems = [
     { id: "home", label: "Home" },
@@ -28,12 +47,13 @@ function App() {
     { id: "workflow", label: "Workflow" },
     { id: "developers", label: "Developers" },
     { id: "platforms", label: "Platforms" },
-    { id: "chat", label: "Chat" },
+    { id: "chat", label: "Try out Jenny →" },
   ] as const
 
   const initialNavItems = [
     { id: "home", label: "Home" },
     { id: "demo", label: "Demo" },
+    { id: "chat", label: "Try out Jenny →" },
   ] as const
 
   // Navbar items depend on whether we are currently on the Home page
@@ -85,7 +105,7 @@ function App() {
         element.scrollIntoView({ behavior: "smooth" })
         setActivePage(id)
         if (showHome) setShowHome(false)
-        
+
         scrollTimeoutRef.current = setTimeout(() => {
           isScrolling.current = false
         }, 1000)
@@ -128,15 +148,18 @@ function App() {
   const springConfig = { type: "spring" as const, bounce: 0.15, duration: 0.8 };
 
   return (
-    <div className="relative h-screen w-full overflow-hidden bg-black text-white">
+    <div
+      className={`relative h-screen w-full overflow-hidden transition-colors duration-700 ${['demo', 'workflow', 'developers', 'platforms'].includes(activePage) ? 'bg-white text-black' : 'bg-black text-white'
+        }`}
+    >
       {/* Premium Glassmorphism Navbar */}
       <nav className="fixed top-8 left-0 right-0 z-[100] flex justify-center px-4 pointer-events-none">
-        <motion.div 
+        <motion.div
           layout
           initial={{ y: -20, opacity: 0 }}
           animate={{ y: 0, opacity: 1 }}
           transition={{ layout: springConfig }}
-          className="flex items-center gap-1 p-1.5 rounded-full border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40 pointer-events-auto min-h-[52px] overflow-hidden"
+          className="flex items-center gap-0.5 sm:gap-1 p-1 rounded-full border border-white/10 shadow-2xl backdrop-blur-xl bg-black/40 pointer-events-auto min-h-[44px] sm:min-h-[52px]"
         >
           <AnimatePresence mode="popLayout">
             {navItems.map((item) => (
@@ -147,10 +170,15 @@ function App() {
                 animate={{ opacity: 1, filter: "blur(0px)", x: 0 }}
                 exit={{ opacity: 0, filter: "blur(8px)", x: 20 }}
                 transition={{ layout: springConfig, opacity: { duration: 0.5 }, filter: { duration: 0.5 }, x: { type: "spring", bounce: 0, duration: 0.7 } }}
-                onClick={() => scrollToSection(item.id)}
-                className={`relative px-4 py-2 text-xs sm:text-sm font-medium rounded-full transition-colors duration-300 ${
-                  activePage === item.id ? 'text-black' : 'text-white/60 hover:text-white hover:bg-white/5'
-                }`}
+                onClick={() => {
+                  if (item.id === 'chat') {
+                    window.open('/?page=chat', '_blank')
+                  } else {
+                    scrollToSection(item.id)
+                  }
+                }}
+                className={`px-1 sm:px-4 py-1.5 sm:py-2 rounded-full text-[8px] min-[375px]:text-[10px] sm:text-sm font-medium transition-colors whitespace-nowrap ${activePage === item.id ? 'text-black' : 'text-white/60 hover:text-white hover:bg-white/5'
+                  }`}
               >
                 {activePage === item.id && (
                   <motion.div
@@ -159,7 +187,24 @@ function App() {
                     transition={{ type: "spring", bounce: 0.15, duration: 0.6 }}
                   />
                 )}
-                <span className="relative z-10 whitespace-nowrap">{item.label}</span>
+                <span className="relative z-10 whitespace-nowrap">
+                  {item.id === 'chat' ? (
+                    <>
+                      <span className="inline sm:hidden">Try Out Jenny →</span>
+                      <span className="hidden sm:inline">Try out Jenny →</span>
+                    </>
+                  ) : item.id === 'developers' ? (
+                    <>
+                      <span className="inline sm:hidden">Devs</span>
+                      <span className="hidden sm:inline">Developers</span>
+                    </>
+                  ) : item.id === 'platforms' ? (
+                    <>
+                      <span className="inline sm:hidden">Apps</span>
+                      <span className="hidden sm:inline">Platforms</span>
+                    </>
+                  ) : item.label}
+                </span>
               </motion.button>
             ))}
           </AnimatePresence>
@@ -178,7 +223,7 @@ function App() {
       </motion.div>
 
       {/* Main Content Areas */}
-      <main 
+      <main
         ref={containerRef}
         className={`relative h-screen w-full overflow-x-hidden custom-scrollbar ${isUnlocked ? 'overflow-y-auto' : 'overflow-y-hidden'}`}
       >
@@ -196,12 +241,12 @@ function App() {
                 {/* 2nd: Workflow Page */}
                 <section id="workflow" className="w-full min-h-screen bg-white text-black flex items-center justify-center py-20 relative overflow-hidden">
                   {/* Subtle Grid Pattern for Canvas Feel */}
-                  <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none" 
-                    style={{ 
+                  <div className="absolute inset-0 z-0 opacity-[0.03] pointer-events-none"
+                    style={{
                       backgroundImage: `radial-gradient(#000 1px, transparent 1px), radial-gradient(#000 1px, transparent 1px)`,
                       backgroundSize: '40px 40px',
                       backgroundPosition: '0 0, 20px 20px'
-                    }} 
+                    }}
                   />
                   <div className="relative z-10 w-full flex items-center justify-center">
                     <WorkflowDemo />
@@ -214,23 +259,17 @@ function App() {
                 </section>
 
                 {/* 4th: Platforms Page */}
-                <section id="platforms" className="w-full min-h-screen bg-black flex items-center justify-center py-20">
+                <section id="platforms" className="w-full min-h-screen bg-white flex items-center justify-center py-20">
                   <FeatureCardDemo />
-                </section>
-
-                {/* 5th: Chat Page */}
-                <section id="chat" className="w-full h-screen relative">
-                  <DarkGradientBackground />
-                  <div className="relative z-10 h-full w-full">
-                    <AnimatedAIChat />
-                  </div>
                 </section>
               </>
             )}
           </>
         )}
       </main>
-      
+
+      <BB8Bot onClick={() => window.open('/?page=chat', '_blank')} />
+
       <style>{`
         .custom-scrollbar::-webkit-scrollbar {
           width: 6px;
@@ -244,6 +283,13 @@ function App() {
         }
         .custom-scrollbar::-webkit-scrollbar-thumb:hover {
           background: rgba(255,255,255,0.2);
+        }
+        .scrollbar-hide::-webkit-scrollbar {
+          display: none;
+        }
+        .scrollbar-hide {
+          -ms-overflow-style: none;
+          scrollbar-width: none;
         }
       `}</style>
     </div>

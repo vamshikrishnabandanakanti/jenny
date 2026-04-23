@@ -35,6 +35,10 @@ interface CircularTestimonialsProps {
 }
 
 function calculateGap(width: number) {
+  // Responsive gap for very small mobile containers
+  if (width < 300) return width * 0.15; 
+  if (width < 640) return width * 0.1;
+  
   const minWidth = 1024;
   const maxWidth = 1456;
   const minGap = 60;
@@ -124,45 +128,48 @@ export const CircularTestimonials = ({
 
   // Compute transforms for each image (always show 3: left, center, right)
   function getImageStyle(index: number): React.CSSProperties {
-    const gap = calculateGap(containerWidth);
-    const maxStickUp = gap * 0.8;
-    // const offset = (index - activeIndex + testimonialsLength) % testimonialsLength;
     const isActive = index === activeIndex;
-    const isLeft = (activeIndex - 1 + testimonialsLength) % testimonialsLength === index;
-    const isRight = (activeIndex + 1) % testimonialsLength === index;
+    
+    // Calculate relative position in the circular array
+    let distance = (index - activeIndex + testimonialsLength) % testimonialsLength;
+    // We want to show a few items behind the active one
+    // Let's say we show up to 3 items in the stack
+    
     if (isActive) {
       return {
-        zIndex: 3,
+        zIndex: 20,
         opacity: 1,
         pointerEvents: "auto",
-        transform: `translateX(0px) translateY(0px) scale(1) rotateY(0deg)`,
-        transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
+        transform: `translateX(0) translateY(0) scale(1) rotate(0deg)`,
+        filter: "blur(0px)",
+        transition: "all 0.9s cubic-bezier(0.16, 1, 0.3, 1)",
       };
     }
-    if (isLeft) {
+
+    // Items in the "back stack" (we'll treat 1, 2, 3 items before as the stack)
+    // To get items "before", we look at large distance values (e.g., length-1, length-2)
+    const stackPos = testimonialsLength - distance;
+    
+    if (stackPos >= 1 && stackPos <= 3) {
       return {
-        zIndex: 2,
-        opacity: 1,
-        pointerEvents: "auto",
-        transform: `translateX(-${gap}px) translateY(-${maxStickUp}px) scale(0.85) rotateY(15deg)`,
-        transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
+        zIndex: 20 - stackPos,
+        opacity: Math.max(0.1, 0.7 - stackPos * 0.2),
+        filter: `blur(${stackPos * 1.5}px)`,
+        // Offset each layer slightly to the top-left to create depth
+        transform: `translateX(-${stackPos * 25}px) translateY(-${stackPos * 25}px) rotate(-${stackPos * 2}deg) scale(${1 - stackPos * 0.04})`,
+        transition: "all 0.9s cubic-bezier(0.16, 1, 0.3, 1)",
+        pointerEvents: "none",
       };
     }
-    if (isRight) {
-      return {
-        zIndex: 2,
-        opacity: 1,
-        pointerEvents: "auto",
-        transform: `translateX(${gap}px) translateY(-${maxStickUp}px) scale(0.85) rotateY(-15deg)`,
-        transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
-      };
-    }
-    // Hide all other images
+
+    // Default: Hidden
     return {
       zIndex: 1,
       opacity: 0,
+      filter: "blur(10px)",
+      transform: `translateX(50px) translateY(50px) scale(0.8)`,
+      transition: "all 0.9s cubic-bezier(0.16, 1, 0.3, 1)",
       pointerEvents: "none",
-      transition: "all 0.8s cubic-bezier(.4,2,.3,1)",
     };
   }
 
@@ -174,10 +181,10 @@ export const CircularTestimonials = ({
   };
 
   return (
-    <div className="testimonial-container w-full max-w-4xl p-8">
-      <div className="testimonial-grid grid gap-20 md:grid-cols-2">
+    <div className="testimonial-container w-full max-w-4xl p-2 sm:p-8">
+      <div className="testimonial-grid grid gap-4 sm:gap-10 md:gap-20 grid-cols-[40%_1fr] md:grid-cols-2 items-center">
         {/* Images */}
-        <div className="image-container relative w-full h-96 perspective-[1000px]" ref={imageContainerRef}>
+        <div className="image-container relative w-full h-32 sm:h-64 md:h-96 perspective-[1000px]" ref={imageContainerRef}>
           {testimonials.map((testimonial, index) => (
             <img
               key={testimonial.src}
@@ -207,7 +214,7 @@ export const CircularTestimonials = ({
                 {activeTestimonial.name}
               </h3>
               <p
-                className="designation mb-8"
+                className="designation mb-2 sm:mb-8"
                 style={{ color: colorDesignation, fontSize: fontSizeDesignation }}
               >
                 {activeTestimonial.designation}
@@ -242,9 +249,9 @@ export const CircularTestimonials = ({
               </motion.p>
             </motion.div>
           </AnimatePresence>
-          <div className="arrow-buttons flex gap-6 pt-12 md:pt-0">
+          <div className="arrow-buttons flex justify-start gap-3 sm:gap-6 pt-10 sm:pt-16">
             <button
-              className="arrow-button w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition-colors border-none"
+              className="arrow-button w-8 h-8 sm:w-11 sm:h-11 rounded-full flex items-center justify-center cursor-pointer transition-colors border-none"
               onClick={handlePrev}
               style={{
                 backgroundColor: hoverPrev ? colorArrowHoverBg : colorArrowBg,
@@ -256,7 +263,7 @@ export const CircularTestimonials = ({
               <FaArrowLeft size={24} color={colorArrowFg} />
             </button>
             <button
-              className="arrow-button w-11 h-11 rounded-full flex items-center justify-center cursor-pointer transition-colors border-none"
+              className="arrow-button w-8 h-8 sm:w-11 sm:h-11 rounded-full flex items-center justify-center cursor-pointer transition-colors border-none"
               onClick={handleNext}
               style={{
                 backgroundColor: hoverNext ? colorArrowHoverBg : colorArrowBg,

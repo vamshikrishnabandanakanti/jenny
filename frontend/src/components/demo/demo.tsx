@@ -37,13 +37,13 @@ const videoContent: MediaContent = {
 const Content = () => {
   return (
     <div className='max-w-4xl mx-auto'>
-      <h2 className='text-3xl font-bold mb-6 text-white'>
+      <h2 className='text-3xl font-bold mb-6 text-black'>
         See Jenny in Action
       </h2>
-      <p className='text-lg mb-8 text-white/80'>
+      <p className='text-lg mb-8 text-black/80'>
         {videoContent.about.overview}
       </p>
-      <p className='text-lg mb-8 text-white/80'>
+      <p className='text-lg mb-8 text-black/80'>
         {videoContent.about.conclusion}
       </p>
     </div>
@@ -52,7 +52,7 @@ const Content = () => {
 
 const Demo = () => {
   return (
-    <div className='min-h-screen bg-black'>
+    <div className='min-h-screen bg-white'>
       <ScrollExpandMedia
         mediaType="video"
         mediaSrc={videoContent.src}

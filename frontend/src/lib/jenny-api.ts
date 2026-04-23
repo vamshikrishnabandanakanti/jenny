@@ -1,87 +1,46 @@
 // =============================================
-// JENNY FRONTEND API CLIENT
+// JENNY FRONTEND API CLIENT (Action Engine)
 // =============================================
-// Replace the contents of frontend/src/lib/jenny-api.ts with this file.
 
-export interface JennyResponse {
-  sessionId: string;
-  detectedCategories: string[];
-  agentsActivated: string[];
-  recoveryPlan: string;
-  urgencyLevel: string;
-  estimatedResolutionTime: string;
-  agentResults?: {
-    agent: string;
-    priority: string;
-    steps: string[];
-    status: string;
-  }[];
-  extended?: {
-    situationContext: Record<string, unknown>;
-    travelOptions: TravelOption[];
-    safePlaces: SafePlace[];
-    emergencyNumbers: EmergencyNumber[];
-    immediateAction: string;
-    communicationMessages: CommunicationMessage[];
-    quickActions: QuickAction[];
-    followUpSupported: boolean;
+export interface JennyActionResponse {
+  type: "action_response" | "text_response" | "request_location";
+  message: string;
+  whatsapp_draft?: string;
+  ride_estimates?: {
+    destination_name: string;
+    drop_lat: number;
+    drop_lng: number;
+    distance_meters: number;
+    walk: { time_mins: number; cost: number };
+    bike: { time_mins: number; cost: number };
+    cab: { time_mins: number; cost: number };
+    bus: { time_mins: number; cost: number };
   };
-}
-
-export interface TravelOption {
-  mode: string;
-  cost: string;
-  duration: string;
-  feasible: boolean;
-  note: string;
-}
-
-export interface SafePlace {
-  name: string;
-  description: string;
-  icon: string;
-  priority: string;
-  tip: string;
-}
-
-export interface EmergencyNumber {
-  label: string;
-  number: string;
-}
-
-export interface CommunicationMessage {
-  type: string;
-  label: string;
-  icon: string;
-  subject: string;
-  body: string;
-}
-
-export interface QuickAction {
-  label: string;
-  action: string;
-  icon: string;
+  data?: any;
 }
 
 // Backend base URL — change this for production
 const BACKEND_URL = import.meta.env.VITE_BACKEND_URL || "http://localhost:3001";
 
-// In-memory session ID — persists for the browser session
-let currentSessionId: string | null = null;
-
 /**
- * Send a message to Jenny backend.
- * Automatically maintains session across follow-up messages.
+ * Send a message and location to Jenny backend.
  */
-export async function callJennyBackend(message: string): Promise<JennyResponse> {
-  const response = await fetch(`${BACKEND_URL}/api/chat`, {
+export async function callJennyBackend(
+  message: string, 
+  location?: { lat: number; lng: number },
+  step: number = 1,
+  history: any[] = []
+): Promise<JennyActionResponse> {
+  const response = await fetch(`${BACKEND_URL}/api/v2/chat`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
       message,
-      sessionId: currentSessionId, // null on first call → backend creates new session
+      location,
+      step,
+      history
     }),
   });
 
@@ -90,26 +49,5 @@ export async function callJennyBackend(message: string): Promise<JennyResponse> 
     throw new Error(error.error || `Backend error: ${response.status}`);
   }
 
-  const data: JennyResponse = await response.json();
-
-  // Store session ID for follow-up messages
-  if (data.sessionId) {
-    currentSessionId = data.sessionId;
-  }
-
-  return data;
-}
-
-/**
- * Reset the session (start fresh conversation).
- */
-export function resetSession(): void {
-  currentSessionId = null;
-}
-
-/**
- * Get the current session ID (for debugging).
- */
-export function getSessionId(): string | null {
-  return currentSessionId;
+  return response.json();
 }

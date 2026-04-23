@@ -27,7 +27,7 @@ const features = [
 
 export default function FeatureCardDemo() {
   return (
-    <div className="flex min-h-[calc(100vh-160px)] w-full items-center justify-center py-10 bg-black">
+    <div className="flex min-h-[calc(100vh-160px)] w-full items-center justify-center py-10 bg-white">
       <div className="container mx-auto grid max-w-6xl grid-cols-1 gap-12 p-6 md:grid-cols-2 lg:grid-cols-3">
         {features.map((feature) => (
           <div key={feature.index} className="flex justify-center">
@@ -37,7 +37,7 @@ export default function FeatureCardDemo() {
               title={feature.title}
               imageSrc={feature.imageSrc}
               color={feature.color}
-              className="w-full bg-neutral-900 border-white/5"
+              className="w-full bg-slate-50 border-black/5"
             />
           </div>
         ))}

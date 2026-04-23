@@ -61,16 +61,23 @@ const ScrollExpandMedia = ({
 
   useEffect(() => {
     const handleWheel = (e: WheelEvent) => {
-      // Find the scrollable container (main in our App.tsx)
       const container = document.querySelector('main') || window;
       const scrollTop = container instanceof HTMLElement ? container.scrollTop : window.scrollY;
 
+      // Only hijack if we are near the top of the container (where this section lives)
+      // or if we are already in the middle of expanding
+      if (scrollTop > 100 && !mediaFullyExpandedRef.current && scrollProgressRef.current === 0) {
+        return;
+      }
+
       if (mediaFullyExpandedRef.current && e.deltaY < 0 && scrollTop <= 10) {
         setMediaFullyExpanded(false);
-        // We don't preventDefault here to allow normal scroll up
       } else if (!mediaFullyExpandedRef.current) {
+        // If we are at the very beginning and scrolling up, don't hijack
+        if (scrollProgressRef.current <= 0 && e.deltaY < 0) return;
+        
         if (e.cancelable) e.preventDefault();
-        const scrollDelta = e.deltaY * 0.0015; // Increased sensitivity
+        const scrollDelta = e.deltaY * 0.002; // Increased sensitivity
         const newProgress = Math.min(
           Math.max(scrollProgressRef.current + scrollDelta, 0),
           1
@@ -100,11 +107,18 @@ const ScrollExpandMedia = ({
       const container = document.querySelector('main') || window;
       const scrollTop = container instanceof HTMLElement ? container.scrollTop : window.scrollY;
 
+      if (scrollTop > 100 && !mediaFullyExpandedRef.current && scrollProgressRef.current === 0) {
+        return;
+      }
+
       if (mediaFullyExpandedRef.current && deltaY < -10 && scrollTop <= 10) {
         setMediaFullyExpanded(false);
       } else if (!mediaFullyExpandedRef.current) {
+        // If we are at the very beginning and scrolling up (swipe down), don't hijack
+        if (scrollProgressRef.current <= 0 && deltaY < 0) return;
+
         if (e.cancelable) e.preventDefault();
-        const scrollFactor = deltaY < 0 ? 0.006 : 0.004;
+        const scrollFactor = deltaY < 0 ? 0.01 : 0.008; // Increased sensitivity
         const scrollDelta = deltaY * scrollFactor;
         const newProgress = Math.min(
           Math.max(scrollProgressRef.current + scrollDelta, 0),
@@ -167,8 +181,12 @@ const ScrollExpandMedia = ({
         <div className='relative w-full flex flex-col items-center min-h-[100dvh]'>
           <motion.div
             className='absolute inset-0 z-0 h-full'
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 - scrollProgress }}
+            initial={{ opacity: 0, filter: "blur(0px)", scale: 1 }}
+            animate={{ 
+              opacity: 1, 
+              filter: `blur(${scrollProgress * 15}px)`,
+              scale: 1 + (scrollProgress * 0.05)
+            }}
             transition={{ duration: 0.1 }}
           >
             <img
@@ -177,7 +195,7 @@ const ScrollExpandMedia = ({
               className='w-screen h-screen object-cover object-center'
               loading="eager"
             />
-            <div className='absolute inset-0 bg-black/10' />
+
           </motion.div>
 
           <div className='container mx-auto flex flex-col items-center justify-start relative z-10'>
@@ -272,7 +290,7 @@ const ScrollExpandMedia = ({
                 <div className='flex flex-col items-center text-center relative z-10 mt-4 transition-none'>
                   {date && (
                     <p
-                      className='text-2xl text-blue-200'
+                      className='text-2xl text-black/60'
                       style={{ transform: `translateX(-${textTranslateX}vw)` }}
                     >
                       {date}
@@ -280,7 +298,7 @@ const ScrollExpandMedia = ({
                   )}
                   {scrollToExpand && (
                     <p
-                      className='text-blue-200 font-medium text-center'
+                      className='text-black/60 font-medium text-center'
                       style={{ transform: `translateX(${textTranslateX}vw)` }}
                     >
                       {scrollToExpand}
@@ -295,13 +313,13 @@ const ScrollExpandMedia = ({
                 }`}
               >
                 <motion.h2
-                  className='text-4xl md:text-5xl lg:text-6xl font-bold text-blue-200 transition-none'
+                  className='text-4xl md:text-5xl lg:text-6xl font-bold text-black transition-none'
                   style={{ transform: `translateX(-${textTranslateX}vw)` }}
                 >
                   {firstWord}
                 </motion.h2>
                 <motion.h2
-                  className='text-4xl md:text-5xl lg:text-6xl font-bold text-center text-blue-200 transition-none'
+                  className='text-4xl md:text-5xl lg:text-6xl font-bold text-center text-black transition-none'
                   style={{ transform: `translateX(${textTranslateX}vw)` }}
                 >
                   {restOfTitle}

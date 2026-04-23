@@ -38,4 +38,21 @@ async function detectIntent(userMessage) {
   return "general_help"; // Default fallback
 }
 
-module.exports = { detectIntent };
+/**
+ * Detect urgency level from message.
+ */
+function detectUrgency(message) {
+  const text = message.toLowerCase();
+  
+  if (text.match(/help me|danger|accident|emergency|dying|blood|gun|knife/)) {
+    return "high";
+  }
+  
+  if (text.match(/stuck|locked|lost|stolen|missed/)) {
+    return "medium";
+  }
+  
+  return "low";
+}
+
+module.exports = { detectIntent, detectUrgency };
