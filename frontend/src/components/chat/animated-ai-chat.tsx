@@ -328,7 +328,7 @@ export function AnimatedAIChat() {
             const errorMessage: Message = {
                 id: (Date.now() + 1).toString(),
                 role: "assistant",
-                content: "I'm having trouble connecting right now. Please check that the backend server is running on port 3001 and try again.",
+                content: "I'm having trouble connecting to my brain right now. Please check your connection or try again in a moment.",
                 timestamp: new Date(),
             };
             setMessages(prev => [...prev, errorMessage]);
