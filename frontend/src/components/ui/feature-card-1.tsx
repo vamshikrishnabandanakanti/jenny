@@ -17,6 +17,8 @@ interface AnimatedFeatureCardProps extends Omit<HTMLMotionProps<"div">, "title">
   imageSrc: string;
   /** The color variant which determines the gradient and tag color */
   color: "orange" | "purple" | "blue";
+  /** Optional children to render below the title */
+  children?: React.ReactNode;
 }
 
 // Define HSL color values for each variant to work with shadcn's theming
@@ -41,7 +43,7 @@ const colorVariants = {
 const AnimatedFeatureCard = React.forwardRef<
   HTMLDivElement,
   AnimatedFeatureCardProps
->(({ className, index, tag, title, imageSrc, color, ...props }, ref) => {
+>(({ className, index, tag, title, imageSrc, color, children, ...props }, ref) => {
   const cardStyle = colorVariants[color] as React.CSSProperties;
 
   return (
@@ -101,7 +103,8 @@ const AnimatedFeatureCard = React.forwardRef<
         >
           {tag}
         </span>
-        <p className="text-base font-medium text-black dark:text-white">{title}</p>
+        <div className="text-base font-medium text-black dark:text-white mb-2">{title}</div>
+        {children}
       </div>
     </motion.div>
   );

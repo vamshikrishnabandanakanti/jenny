@@ -52,6 +52,13 @@ const limiter = rateLimit({
 app.use(limiter);
 
 // ─────────────────────────────────────────
+// INITIALIZE SERVICES
+// ─────────────────────────────────────────
+
+// Initialize Telegram Bot (Webhooks or Polling)
+initTelegramBot(app);
+
+// ─────────────────────────────────────────
 // ROUTES
 // ─────────────────────────────────────────
 
@@ -98,9 +105,6 @@ app.listen(PORT, () => {
   → POST http://localhost:${PORT}/api/analyze
   → GET  http://localhost:${PORT}/api/health
   `);
-
-  // Initialize Telegram Bot
-  initTelegramBot();
 });
 
 module.exports = app;

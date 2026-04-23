@@ -1,4 +1,5 @@
 import { AnimatedFeatureCard } from "@/components/ui/feature-card-1";
+import { Button } from "@/components/ui/button";
 
 import reactLogo from "./assets/react.png";
 import telegramLogo from "./assets/telegram.png";
@@ -16,9 +17,16 @@ const features = [
   {
     index: "002",
     tag: "TELEGRAM",
-    title: "Connect with Jenny's panic agents directly for instant crisis support.",
+    title: "Connect with Jenny's panic agents directly for instant crisis support. on telegram also",
     imageSrc: telegramLogo,
     color: "purple" as const,
+    children: (
+      <Button asChild className="w-full mt-2" variant="outline" size="sm">
+        <a href="https://t.me/jenny_panic_assistant_bot" target="_blank" rel="noopener noreferrer">
+          Try Jenny on Telegram
+        </a>
+      </Button>
+    )
   },
   {
     index: "003",
@@ -42,7 +50,9 @@ export default function FeatureCardDemo() {
               imageSrc={feature.imageSrc}
               color={feature.color}
               className="w-full bg-slate-50 border-black/5"
-            />
+            >
+              {feature.children}
+            </AnimatedFeatureCard>
           </div>
         ))}
       </div>

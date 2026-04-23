@@ -161,17 +161,39 @@ async function processMessage(ctx, userMessage, location) {
 /**
  * Initialize the bot
  */
-function initTelegramBot() {
-    if (!process.env.TELEGRAM_BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN === 'your_telegram_bot_token_here') {
+function initTelegramBot(app) {
+    const token = process.env.TELEGRAM_BOT_TOKEN;
+    const backendUrl = process.env.BACKEND_URL;
+
+    if (!token || token === 'your_telegram_bot_token_here') {
         console.warn('[Telegram Bot] Token not configured. Bot will not start.');
         return;
     }
 
-    bot.launch().then(() => {
-        console.log('✅ Jenny Telegram Bot is running 24/7...');
-    }).catch(err => {
-        console.error('❌ Failed to launch Telegram Bot:', err);
-    });
+    if (backendUrl && backendUrl.startsWith('http')) {
+        // WEBHOOK MODE (Best for production/Render)
+        // We use a secret path to prevent unauthorized POST requests to the webhook
+        const secretPath = `/telegraf-webhook-${token.slice(-10)}`;
+        
+        // Register the middleware with the express app
+        app.use(bot.webhookCallback(secretPath));
+        
+        // Tell Telegram to send updates to this URL
+        bot.telegram.setWebhook(`${backendUrl}${secretPath}`)
+            .then(() => {
+                console.log(`✅ Jenny Telegram Bot is running via Webhook: ${backendUrl}${secretPath}`);
+            })
+            .catch(err => {
+                console.error('❌ Failed to set Telegram Webhook:', err);
+            });
+    } else {
+        // POLLING MODE (Best for local development)
+        bot.launch().then(() => {
+            console.log('✅ Jenny Telegram Bot is running via Polling...');
+        }).catch(err => {
+            console.error('❌ Failed to launch Telegram Bot (Polling):', err);
+        });
+    }
 
     // Enable graceful stop
     process.once('SIGINT', () => bot.stop('SIGINT'));
