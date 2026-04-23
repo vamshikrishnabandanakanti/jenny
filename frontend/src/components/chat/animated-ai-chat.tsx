@@ -15,6 +15,22 @@ import {
 import { motion, AnimatePresence } from "framer-motion";
 import * as React from "react"
 
+// Simple markdown renderer for Jenny responses
+function renderMarkdown(text: string): React.ReactNode {
+    const lines = text.split('\n');
+    return lines.map((line, i) => {
+        // Bold: **text**
+        const parts = line.split(/(\*\*[^*]+\*\*)/g).map((part, j) => {
+            if (part.startsWith('**') && part.endsWith('**')) {
+                return <strong key={j}>{part.slice(2, -2)}</strong>;
+            }
+            return part;
+        });
+        return <span key={i}>{parts}{i < lines.length - 1 ? <br /> : null}</span>;
+    });
+}
+
+
 interface UseAutoResizeTextareaProps {
     minHeight: number;
     maxHeight?: number;
@@ -74,47 +90,47 @@ interface CommandSuggestion {
 }
 
 interface TextareaProps
-  extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
-  containerClassName?: string;
-  showRing?: boolean;
+    extends React.TextareaHTMLAttributes<HTMLTextAreaElement> {
+    containerClassName?: string;
+    showRing?: boolean;
 }
 
 const Textarea = React.forwardRef<HTMLTextAreaElement, TextareaProps>(
-  ({ className, containerClassName, showRing = true, ...props }, ref) => {
-    const [isFocused, setIsFocused] = React.useState(false);
-    
-    return (
-      <div className={cn(
-        "relative",
-        containerClassName
-      )}>
-        <textarea
-          className={cn(
-            "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
-            "transition-all duration-200 ease-in-out",
-            "placeholder:text-muted-foreground",
-            "disabled:cursor-not-allowed disabled:opacity-50",
-            showRing ? "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" : "",
-            className
-          )}
-          ref={ref}
-          onFocus={() => setIsFocused(true)}
-          onBlur={() => setIsFocused(false)}
-          {...props}
-        />
-        
-        {showRing && isFocused && (
-          <motion.span 
-            className="absolute inset-0 rounded-md pointer-events-none ring-2 ring-offset-0 ring-violet-500/30"
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            transition={{ duration: 0.2 }}
-          />
-        )}
-      </div>
-    )
-  }
+    ({ className, containerClassName, showRing = true, ...props }, ref) => {
+        const [isFocused, setIsFocused] = React.useState(false);
+
+        return (
+            <div className={cn(
+                "relative",
+                containerClassName
+            )}>
+                <textarea
+                    className={cn(
+                        "flex min-h-[80px] w-full rounded-md border border-input bg-background px-3 py-2 text-sm",
+                        "transition-all duration-200 ease-in-out",
+                        "placeholder:text-muted-foreground",
+                        "disabled:cursor-not-allowed disabled:opacity-50",
+                        showRing ? "focus-visible:outline-none focus-visible:ring-0 focus-visible:ring-offset-0" : "",
+                        className
+                    )}
+                    ref={ref}
+                    onFocus={() => setIsFocused(true)}
+                    onBlur={() => setIsFocused(false)}
+                    {...props}
+                />
+
+                {showRing && isFocused && (
+                    <motion.span
+                        className="absolute inset-0 rounded-md pointer-events-none ring-2 ring-offset-0 ring-violet-500/30"
+                        initial={{ opacity: 0 }}
+                        animate={{ opacity: 1 }}
+                        exit={{ opacity: 0 }}
+                        transition={{ duration: 0.2 }}
+                    />
+                )}
+            </div>
+        )
+    }
 )
 Textarea.displayName = "Textarea"
 
@@ -142,29 +158,29 @@ export function AnimatedAIChat() {
     const chatContainerRef = useRef<HTMLDivElement>(null);
 
     const commandSuggestions: CommandSuggestion[] = [
-        { 
-            icon: <ImageIcon className="w-4 h-4" />, 
-            label: "Clone UI", 
-            description: "Generate a UI from a screenshot", 
-            prefix: "/clone" 
+        {
+            icon: <ImageIcon className="w-4 h-4" />,
+            label: "Clone UI",
+            description: "Generate a UI from a screenshot",
+            prefix: "/clone"
         },
-        { 
-            icon: <LayoutTemplate className="w-4 h-4" />, 
-            label: "Import Figma", 
-            description: "Import a design from Figma", 
-            prefix: "/figma" 
+        {
+            icon: <LayoutTemplate className="w-4 h-4" />,
+            label: "Import Figma",
+            description: "Import a design from Figma",
+            prefix: "/figma"
         },
-        { 
-            icon: <Monitor className="w-4 h-4" />, 
-            label: "Create Page", 
-            description: "Generate a new web page", 
-            prefix: "/page" 
+        {
+            icon: <Monitor className="w-4 h-4" />,
+            label: "Create Page",
+            description: "Generate a new web page",
+            prefix: "/page"
         },
-        { 
-            icon: <Sparkles className="w-4 h-4" />, 
-            label: "Improve", 
-            description: "Improve existing UI design", 
-            prefix: "/improve" 
+        {
+            icon: <Sparkles className="w-4 h-4" />,
+            label: "Improve",
+            description: "Improve existing UI design",
+            prefix: "/improve"
         },
     ];
 
@@ -290,7 +306,7 @@ export function AnimatedAIChat() {
             <div ref={chatContainerRef} className="flex-1 overflow-y-auto px-4 py-8 space-y-6 scrollbar-hide">
                 <div className="max-w-3xl mx-auto w-full space-y-8">
                     {messages.length === 0 && (
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0, y: 20 }}
                             animate={{ opacity: 1, y: 0 }}
                             className="text-center py-20 space-y-4"
@@ -301,7 +317,7 @@ export function AnimatedAIChat() {
                             <p className="text-white/40 text-sm">Start a conversation or use / for commands</p>
                             <div className="flex flex-wrap justify-center gap-2 mt-8">
                                 {commandSuggestions.map((s, i) => (
-                                    <button 
+                                    <button
                                         key={i}
                                         onClick={() => setValue(s.prefix + " ")}
                                         className="px-4 py-2 bg-white/[0.03] border border-white/[0.05] rounded-full text-xs text-white/60 hover:bg-white/[0.08] transition-all"
@@ -327,11 +343,11 @@ export function AnimatedAIChat() {
                             >
                                 <div className={cn(
                                     "max-w-[85%] px-4 py-3 rounded-2xl text-sm leading-relaxed",
-                                    message.role === "user" 
-                                        ? "bg-violet-500/20 border border-violet-500/20 text-white shadow-lg" 
+                                    message.role === "user"
+                                        ? "bg-violet-500/20 border border-violet-500/20 text-white shadow-lg"
                                         : "bg-white/[0.03] border border-white/[0.05] text-white/90"
                                 )}>
-                                    {message.content}
+                                    {renderMarkdown(message.content)}
                                 </div>
                                 <span className="text-[10px] text-white/20 px-1">
                                     {message.timestamp.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
@@ -341,7 +357,7 @@ export function AnimatedAIChat() {
                     </AnimatePresence>
 
                     {isTyping && (
-                        <motion.div 
+                        <motion.div
                             initial={{ opacity: 0 }}
                             animate={{ opacity: 1 }}
                             className="flex items-start gap-3"
@@ -359,13 +375,13 @@ export function AnimatedAIChat() {
 
             {/* Sticky Bottom Input */}
             <div className="w-full max-w-3xl mx-auto p-4 pb-8 relative z-20">
-                <motion.div 
+                <motion.div
                     className="relative backdrop-blur-2xl bg-[#0A0A0B]/80 rounded-2xl border border-white/[0.05] shadow-2xl overflow-hidden"
                     layout
                 >
                     <AnimatePresence>
                         {showCommandPalette && (
-                            <motion.div 
+                            <motion.div
                                 ref={commandPaletteRef}
                                 className="absolute left-0 right-0 bottom-full mb-2 backdrop-blur-xl bg-black/90 rounded-lg z-50 shadow-lg border border-white/10 overflow-hidden"
                                 initial={{ opacity: 0, y: 10 }}
@@ -423,7 +439,7 @@ export function AnimatedAIChat() {
                                 <Command className="w-4 h-4" />
                             </button>
                         </div>
-                        <button 
+                        <button
                             onClick={handleSendMessage}
                             disabled={!value.trim()}
                             className={cn(
@@ -436,7 +452,7 @@ export function AnimatedAIChat() {
                         </button>
                     </div>
                 </motion.div>
-                
+
                 <p className="text-center text-[10px] text-white/20 mt-4">
                     AI can make mistakes. Verify important info.
                 </p>
@@ -444,7 +460,7 @@ export function AnimatedAIChat() {
 
             {/* Mouse Flow Effect */}
             {inputFocused && (
-                <motion.div 
+                <motion.div
                     className="fixed w-[400px] h-[400px] rounded-full pointer-events-none z-0 opacity-[0.03] bg-gradient-to-r from-violet-500 to-indigo-500 blur-[80px]"
                     animate={{
                         x: mousePosition.x - 200,

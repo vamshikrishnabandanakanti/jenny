@@ -1,15 +1,12 @@
 {
-  "name": "jenny-monorepo",
+  "name": "jenny-frontend-only",
   "private": true,
   "scripts": {
-    "dev:frontend": "npm run dev --workspace=frontend",
-    "dev:backend": "npm run dev --workspace=backend",
-    "build:frontend": "npm run build --workspace=frontend",
-    "build:backend": "npm run build --workspace=backend",
+    "dev": "npm run dev --workspace=frontend",
+    "build": "npm run build --workspace=frontend",
     "install:all": "npm install"
   },
   "workspaces": [
-    "frontend",
-    "backend"
+    "frontend"
   ]
 }
