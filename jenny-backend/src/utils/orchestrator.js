@@ -161,19 +161,120 @@ async function handleFollowUp(sessionId, userMessage) {
 }
 
 /**
- * Main entry point — routes to initial or follow-up handler.
+ * Detect if this is a simple greeting / casual message
+ * that doesn't need 6 parallel AI agents.
+ */
+function isSimpleGreeting(message) {
+  const greetings = [
+    /^(hi|hey|hello|hii+|helo|hola|namaste|yo)[\s!.?]*$/i,
+    /^(good\s?(morning|evening|afternoon|night))[\s!.?]*$/i,
+    /^(thanks?|thank\s?you|ok|okay|bye|goodbye|gn|gm)[\s!.?]*$/i,
+    /^(how are you|what's up|sup|wassup)[\s!?.]*$/i,
+    /^(start|help|menu)[\s!?.]*$/i,
+  ];
+  return greetings.some(p => p.test(message.trim()));
+}
+
+/**
+ * Return an instant greeting response without calling any AI agents.
+ */
+function instantGreetingResponse(sessionId, userMessage) {
+  addMessage(sessionId, "user", userMessage);
+
+  const greetingReply = "Hey there! 👋 I'm Jenny, your emergency support companion.\n\n" +
+    "I'm here to help you navigate any crisis — from missed transport to medical emergencies.\n\n" +
+    "**Tell me what's happening**, and I'll create a recovery plan for you instantly. 💙";
+
+  addMessage(sessionId, "assistant", greetingReply);
+
+  return {
+    sessionId,
+    detectedCategories: ["general"],
+    agentsActivated: ["Greeting"],
+    recoveryPlan: greetingReply,
+    urgencyLevel: "low",
+    estimatedResolutionTime: "Instant",
+    agentResults: [
+      {
+        agent: "Jenny",
+        priority: "low",
+        steps: [greetingReply],
+        status: "success",
+      },
+    ],
+    extended: {
+      situationContext: {},
+      followUpSupported: true,
+    },
+  };
+}
+
+/**
+ * Main entry point — routes to instant greeting, follow-up, or full orchestration.
  */
 async function orchestrate(sessionId, userMessage) {
   const history = getHistory(sessionId);
-  const followUp = isFollowUp(userMessage, history);
 
-  console.log(`[Orchestrator] Session: ${sessionId} | Follow-up: ${followUp} | Message: "${userMessage.slice(0, 60)}..."`);
+  console.log(`[Orchestrator] Session: ${sessionId} | Message: "${userMessage.slice(0, 60)}..."`);
 
-  if (followUp) {
-    return await handleFollowUp(sessionId, userMessage);
-  } else {
-    return await handleInitialMessage(sessionId, userMessage);
+  // FAST PATH: Handle satisfaction responses instantly
+  const satisfiedPattern = /^(satisfied|yes.*(satisfied|happy|good|done|thanks)|i'?m\s+(good|fine|okay|ok|done|satisfied))[\s!.]*$/i;
+  const notSatisfiedPattern = /^(not\s*satisfied|no|need\s*more\s*help|not\s*(good|done|okay))[\s!.]*$/i;
+
+  if (satisfiedPattern.test(userMessage.trim())) {
+    console.log(`[Orchestrator] ⚡ Satisfied — ending session`);
+    addMessage(sessionId, "user", userMessage);
+    const endMsg = "I'm glad I could help! 💙 Remember, you're stronger than you think. Stay safe, and don't hesitate to reach out anytime you need me. Take care! 🌟";
+    addMessage(sessionId, "assistant", endMsg);
+    return {
+      sessionId,
+      detectedCategories: ["session_end"],
+      agentsActivated: ["Jenny"],
+      recoveryPlan: endMsg,
+      urgencyLevel: "low",
+      estimatedResolutionTime: "Resolved",
+      agentResults: [{ agent: "Jenny", priority: "low", steps: [endMsg], status: "success" }],
+      extended: { sessionEnded: true, followUpSupported: false },
+    };
   }
+
+  if (notSatisfiedPattern.test(userMessage.trim())) {
+    console.log(`[Orchestrator] ⚡ Not satisfied — continuing`);
+    addMessage(sessionId, "user", userMessage);
+    const continueMsg = "I understand — let's keep going. Tell me what else is troubling you or what specific help you need. I'm not going anywhere. 💪";
+    addMessage(sessionId, "assistant", continueMsg);
+    return {
+      sessionId,
+      detectedCategories: ["follow-up"],
+      agentsActivated: ["Jenny"],
+      recoveryPlan: continueMsg,
+      urgencyLevel: "medium",
+      estimatedResolutionTime: "Ongoing",
+      agentResults: [{ agent: "Jenny", priority: "medium", steps: [continueMsg], status: "success" }],
+      extended: { followUpSupported: true },
+    };
+  }
+
+  // FAST PATH: Instant response for simple greetings
+  if (isSimpleGreeting(userMessage) && history.length < 2) {
+    console.log(`[Orchestrator] ⚡ Instant greeting — skipping agents`);
+    return instantGreetingResponse(sessionId, userMessage);
+  }
+
+  const followUp = isFollowUp(userMessage, history);
+  console.log(`[Orchestrator] Follow-up: ${followUp}`);
+
+  const startTime = Date.now();
+
+  let result;
+  if (followUp) {
+    result = await handleFollowUp(sessionId, userMessage);
+  } else {
+    result = await handleInitialMessage(sessionId, userMessage);
+  }
+
+  console.log(`[Orchestrator] ✅ Response ready in ${Date.now() - startTime}ms`);
+  return result;
 }
 
 // ---- Helpers ----

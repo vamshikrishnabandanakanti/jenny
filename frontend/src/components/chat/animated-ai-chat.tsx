@@ -171,6 +171,7 @@ interface Message {
     };
     actionData?: any[];
     responseType?: string;
+    askSatisfaction?: boolean;
     timestamp: Date;
 }
 
@@ -178,6 +179,7 @@ export function AnimatedAIChat() {
     const [value, setValue] = useState("");
     const [messages, setMessages] = useState<Message[]>([]);
     const [isTyping, setIsTyping] = useState(false);
+    const [sessionEnded, setSessionEnded] = useState(false);
     const [interactionStep, setInteractionStep] = useState(1);
 
     const [activeSuggestion, setActiveSuggestion] = useState<number>(-1);
@@ -322,9 +324,15 @@ export function AnimatedAIChat() {
                 rideEstimates: jennyData.ride_estimates,
                 actionData: Array.isArray(jennyData.data) ? jennyData.data : (jennyData.data?.places || undefined),
                 responseType: jennyData.type,
+                askSatisfaction: jennyData.askSatisfaction || false,
                 timestamp: new Date(),
             };
             setMessages(prev => [...prev, assistantMessage]);
+
+            // Handle session end
+            if (jennyData.type === "session_end") {
+                setSessionEnded(true);
+            }
         } catch (error) {
             console.error("[Chat] Backend error:", error);
             const errorMessage: Message = {
@@ -376,6 +384,21 @@ export function AnimatedAIChat() {
         handleSendMessage(`I need travel estimates and a ride to ${place.name}. The coordinates are lat: ${place.lat}, lng: ${place.lng}, distance: ${place.distance}m.`, false);
     };
 
+    const handleSatisfaction = (satisfied: boolean) => {
+        if (satisfied) {
+            handleSendMessage("Satisfied", true);
+        } else {
+            handleSendMessage("Not satisfied", true);
+        }
+    };
+
+    const handleNewChat = () => {
+        setMessages([]);
+        setSessionEnded(false);
+        setInteractionStep(1);
+        setValue("");
+    };
+
     const handleAttachFile = () => {
         // Attachment support coming soon
         console.log("[Chat] File attachment clicked — feature pending");
@@ -398,32 +421,38 @@ export function AnimatedAIChat() {
                             animate={{ opacity: 1, y: 0 }}
                             className="text-center py-20 space-y-4"
                         >
-                            <h1 className="text-4xl font-medium tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-white/90 to-white/40">
-                                Hey, I’m <span className="text-violet-400 font-bold drop-shadow-[0_0_8px_rgba(167,139,250,0.5)]">Jenny</span>. What’s going on?
+                            <h1 className="text-4xl font-semibold tracking-tight">
+                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white/95 to-white/60">Hey, I’m </span>
+                                <span className="relative inline-block">
+                                    <span className="text-violet-400 font-bold drop-shadow-[0_0_15px_rgba(167,139,250,0.6)]">Jenny</span>
+                                    <span className="absolute -inset-2 bg-violet-500/20 blur-xl rounded-full -z-10 animate-pulse" />
+                                </span>
+                                <span className="bg-clip-text text-transparent bg-gradient-to-r from-white/95 to-white/60">. What’s going on?</span>
                             </h1>
-                            <p className="text-white/40 text-sm">Tell me what’s happening. I’m here — we’ll take this step by step.</p>
-                            <div className="mt-8 flex flex-col items-center gap-3">
-                                <p className="text-xs font-semibold text-white/40 tracking-widest uppercase"></p>
-                                <div className="flex flex-wrap justify-center gap-2">
+                            <p className="text-white/40 text-base font-medium max-w-lg mx-auto">Tell me what’s happening. I’m here — we’ll take this step by step. You're not alone. 🤝</p>
+                            <div className="mt-12 flex flex-col items-center gap-6">
+                                <p className="text-[10px] font-bold text-white/20 tracking-[0.2em] uppercase">Quick Suggestions</p>
+                                <div className="flex flex-wrap justify-center gap-3 px-4 max-w-2xl">
                                     {[
-                                        "I’m feeling anxious",
-                                        "Emergency help",
-                                        "Travel issue",
-                                        "Lost something",
-                                        "Just need to talk"
-                                    ].map((action, i) => (
+                                        { label: "I’m feeling anxious 🧘", action: "I’m feeling anxious" },
+                                        { label: "Emergency help 🚨", action: "Emergency help" },
+                                        { label: "Travel issue 🚕", action: "Travel issue" },
+                                        { label: "Lost something 🔍", action: "Lost something" },
+                                        { label: "Just need to talk 💬", action: "Just need to talk" }
+                                    ].map((item, i) => (
                                         <button
                                             key={i}
                                             onClick={() => {
-                                                setValue(action);
+                                                setValue(item.action);
                                                 setTimeout(() => {
                                                     adjustHeight();
                                                     textareaRef.current?.focus();
                                                 }, 0);
                                             }}
-                                            className="px-4 py-2 bg-white/[0.03] border border-white/[0.05] rounded-full text-xs text-white/60 hover:bg-white/[0.08] hover:text-white transition-all hover:border-white/20"
+                                            className="group relative px-6 py-3 bg-white/[0.03] backdrop-blur-md border border-white/10 rounded-2xl text-[13px] font-medium text-white/70 transition-all duration-300 hover:bg-white/[0.08] hover:text-white hover:border-violet-500/30 hover:shadow-[0_0_25px_rgba(139,92,246,0.15)] hover:scale-[1.05] active:scale-[0.95]"
                                         >
-                                            {action}
+                                            <div className="absolute inset-0 bg-gradient-to-r from-violet-500/0 to-indigo-500/0 group-hover:from-violet-500/5 group-hover:to-indigo-500/5 rounded-2xl transition-all duration-300" />
+                                            <span className="relative z-10">{item.label}</span>
                                         </button>
                                     ))}
                                 </div>
@@ -515,31 +544,31 @@ export function AnimatedAIChat() {
                                                     <div className="text-[13px] text-white/50 mb-3 leading-snug">{place.address}</div>
 
                                                     <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 mt-4">
-                                                        <div className="text-[11px] uppercase tracking-wider text-violet-300/80 font-medium bg-violet-500/10 px-2 py-1 rounded-md self-start sm:self-auto">
-                                                            {place.distance}m away
+                                                        <div className="text-[11px] uppercase tracking-wider text-violet-300/80 font-medium bg-violet-500/10 px-2.5 py-1.5 rounded-lg self-start sm:self-auto border border-violet-500/20">
+                                                            📍 {place.distance}m away
                                                         </div>
                                                         <div className="flex flex-wrap gap-2">
                                                             {place.phone && (
                                                                 <a
                                                                     href={`tel:${place.phone}`}
-                                                                    className="px-3 sm:px-4 py-1.5 bg-white/10 hover:bg-white/20 text-white rounded-lg text-xs font-medium transition"
+                                                                    className="group relative px-4 py-2 bg-gradient-to-r from-white/10 to-white/5 hover:from-white/20 hover:to-white/10 text-white rounded-xl text-xs font-semibold transition-all duration-300 border border-white/10 hover:border-white/25 hover:shadow-[0_0_20px_rgba(255,255,255,0.1)] backdrop-blur-sm"
                                                                 >
-                                                                    Call
+                                                                    <span className="flex items-center gap-1.5">📞 Call</span>
                                                                 </a>
                                                             )}
                                                             <button
                                                                 onClick={() => handleRideEstimate(place)}
-                                                                className="px-3 sm:px-4 py-1.5 bg-yellow-500/20 hover:bg-yellow-500/30 text-yellow-300 rounded-lg text-xs font-medium transition whitespace-nowrap"
+                                                                className="group relative px-4 py-2 bg-gradient-to-r from-amber-500/20 to-orange-500/20 hover:from-amber-500/30 hover:to-orange-500/30 text-amber-200 rounded-xl text-xs font-semibold transition-all duration-300 border border-amber-500/20 hover:border-amber-400/40 hover:shadow-[0_0_20px_rgba(245,158,11,0.15)] backdrop-blur-sm"
                                                             >
-                                                                Ride Estimate
+                                                                <span className="flex items-center gap-1.5">🚕 Ride Estimate</span>
                                                             </button>
                                                             <a
                                                                 href={`https://www.google.com/maps/dir/?api=1&destination=${place.lat},${place.lng}`}
                                                                 target="_blank"
                                                                 rel="noreferrer"
-                                                                className="px-3 sm:px-4 py-1.5 bg-violet-600/90 hover:bg-violet-500 text-white shadow-[0_0_12px_rgba(124,58,237,0.3)] rounded-lg text-xs font-medium transition"
+                                                                className="group relative px-4 py-2 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-xl text-xs font-semibold transition-all duration-300 shadow-[0_0_20px_rgba(124,58,237,0.25)] hover:shadow-[0_0_30px_rgba(124,58,237,0.4)] border border-violet-400/20"
                                                             >
-                                                                Navigate
+                                                                <span className="flex items-center gap-1.5">🧭 Navigate</span>
                                                             </a>
                                                         </div>
                                                     </div>
@@ -558,12 +587,12 @@ export function AnimatedAIChat() {
                                                 href={`https://wa.me/?text=${encodeURIComponent(message.whatsappDraft)}`}
                                                 target="_blank"
                                                 rel="noreferrer"
-                                                className="w-full flex items-center justify-center gap-2 bg-[#25D366] hover:bg-[#1DA851] text-white px-4 py-3 rounded-xl text-sm font-medium transition-colors shadow-lg"
+                                                className="group w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-[#25D366] to-[#128C7E] hover:from-[#2BE87A] hover:to-[#1DA863] text-white px-5 py-3.5 rounded-2xl text-sm font-semibold transition-all duration-300 shadow-[0_0_25px_rgba(37,211,102,0.25)] hover:shadow-[0_0_35px_rgba(37,211,102,0.4)] border border-[#25D366]/30 hover:scale-[1.02] active:scale-[0.98]"
                                             >
-                                                <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                                                <svg className="w-5 h-5 group-hover:scale-110 transition-transform duration-300" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
                                                     <path d="M17.472 14.382c-.297-.149-1.758-.867-2.03-.967-.273-.099-.471-.148-.67.15-.197.297-.767.966-.94 1.164-.173.199-.347.223-.644.075-.297-.15-1.255-.463-2.39-1.475-.883-.788-1.48-1.761-1.653-2.059-.173-.297-.018-.458.13-.606.134-.133.298-.347.446-.52.149-.174.198-.298.298-.497.099-.198.05-.371-.025-.52-.075-.149-.669-1.612-.916-2.207-.242-.579-.487-.5-.669-.51a12.8 12.8 0 0 0-.57-.01c-.198 0-.52.074-.792.372-.272.297-1.04 1.016-1.04 2.479 0 1.462 1.065 2.875 1.213 3.074.149.198 2.096 3.2 5.077 4.487.709.306 1.262.489 1.694.625.712.227 1.36.195 1.871.118.571-.085 1.758-.719 2.006-1.413.248-.694.248-1.289.173-1.413-.074-.124-.272-.198-.57-.347m-5.421 7.403h-.004a9.87 9.87 0 0 1-5.031-1.378l-.361-.214-3.741.982.998-3.648-.235-.374a9.86 9.86 0 0 1-1.51-5.26c.001-5.45 4.436-9.884 9.888-9.884 2.64 0 5.122 1.03 6.988 2.898a9.825 9.825 0 0 1 2.893 6.994c-.003 5.45-4.437 9.884-9.885 9.884m8.413-18.297A11.815 11.815 0 0 0 12.05 0C5.495 0 .16 5.335.157 11.892c0 2.096.547 4.142 1.588 5.945L.057 24l6.305-1.654a11.882 11.882 0 0 0 5.683 1.448h.005c6.554 0 11.89-5.335 11.893-11.893a11.821 11.821 0 0 0-3.48-8.413Z" />
                                                 </svg>
-                                                Send update to family via WhatsApp
+                                                📲 Send Update to Family
                                             </a>
                                         </motion.div>
                                     )}
@@ -598,40 +627,40 @@ export function AnimatedAIChat() {
                                                 </div>
                                             </div>
                                             {/* Booking Buttons */}
-                                            <div className="grid grid-cols-2 gap-2 mb-2">
+                                            <div className="grid grid-cols-2 gap-2.5 mb-2.5">
                                                 <a
                                                     href={`https://book.olacabs.com/?drop_lat=${message.rideEstimates.drop_lat}&drop_lng=${message.rideEstimates.drop_lng}`}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="flex items-center justify-center gap-2 bg-[#1A8D1A] hover:bg-[#158015] text-white px-3 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg"
+                                                    className="group flex items-center justify-center gap-2 bg-gradient-to-br from-[#2E8B2E] to-[#1A6B1A] hover:from-[#3AA03A] hover:to-[#228B22] text-white px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-300 shadow-[0_0_20px_rgba(46,139,46,0.2)] hover:shadow-[0_0_30px_rgba(46,139,46,0.35)] border border-green-400/20 hover:scale-[1.03] active:scale-[0.97]"
                                                 >
-                                                    🚗 Book Ola
+                                                    <span className="text-base group-hover:scale-125 transition-transform duration-300">🚗</span> Book Ola
                                                 </a>
                                                 <a
                                                     href={`https://m.uber.com/ul/?action=setPickup&dropoff[latitude]=${message.rideEstimates.drop_lat}&dropoff[longitude]=${message.rideEstimates.drop_lng}`}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="flex items-center justify-center gap-2 bg-black hover:bg-gray-900 text-white px-3 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg border border-white/10"
+                                                    className="group flex items-center justify-center gap-2 bg-gradient-to-br from-[#1A1A2E] to-[#000000] hover:from-[#2A2A3E] hover:to-[#111111] text-white px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-300 shadow-[0_0_20px_rgba(255,255,255,0.05)] hover:shadow-[0_0_30px_rgba(255,255,255,0.1)] border border-white/15 hover:border-white/25 hover:scale-[1.03] active:scale-[0.97]"
                                                 >
-                                                    🚕 Book Uber
+                                                    <span className="text-base group-hover:scale-125 transition-transform duration-300">🚕</span> Book Uber
                                                 </a>
                                             </div>
-                                            <div className="grid grid-cols-2 gap-2">
+                                            <div className="grid grid-cols-2 gap-2.5">
                                                 <a
                                                     href="https://www.rapido.bike/"
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="flex items-center justify-center gap-2 bg-[#F9C935] hover:bg-[#F9C935]/90 text-black px-3 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg"
+                                                    className="group flex items-center justify-center gap-2 bg-gradient-to-br from-[#FFD700] to-[#FFA500] hover:from-[#FFE44D] hover:to-[#FFB732] text-black px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-300 shadow-[0_0_20px_rgba(255,215,0,0.2)] hover:shadow-[0_0_30px_rgba(255,215,0,0.35)] border border-yellow-300/30 hover:scale-[1.03] active:scale-[0.97]"
                                                 >
-                                                    🏍️ Book Rapido
+                                                    <span className="text-base group-hover:scale-125 transition-transform duration-300">🏍️</span> Book Rapido
                                                 </a>
                                                 <a
                                                     href={`https://www.google.com/maps/dir/?api=1&destination=${message.rideEstimates.drop_lat},${message.rideEstimates.drop_lng}`}
                                                     target="_blank"
                                                     rel="noreferrer"
-                                                    className="flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-500 text-white px-3 py-2.5 rounded-xl text-xs font-bold transition-colors shadow-lg"
+                                                    className="group flex items-center justify-center gap-2 bg-gradient-to-br from-[#4285F4] to-[#1A73E8] hover:from-[#5B9BF7] hover:to-[#3384F0] text-white px-4 py-3 rounded-2xl text-xs font-bold transition-all duration-300 shadow-[0_0_20px_rgba(66,133,244,0.2)] hover:shadow-[0_0_30px_rgba(66,133,244,0.35)] border border-blue-400/20 hover:scale-[1.03] active:scale-[0.97]"
                                                 >
-                                                    🗺️ Google Maps
+                                                    <span className="text-base group-hover:scale-125 transition-transform duration-300">🗺️</span> Google Maps
                                                 </a>
                                             </div>
                                         </motion.div>
@@ -645,16 +674,60 @@ export function AnimatedAIChat() {
                                         >
                                             <button
                                                 onClick={() => handleLocationAction("allow")}
-                                                className="flex-1 bg-violet-600 hover:bg-violet-500 text-white px-4 py-2.5 rounded-xl text-sm font-medium transition-colors shadow-lg"
+                                                className="flex-1 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 shadow-[0_0_25px_rgba(124,58,237,0.3)] hover:shadow-[0_0_35px_rgba(124,58,237,0.5)] border border-violet-400/20 hover:scale-[1.02] active:scale-[0.98]"
                                             >
-                                                Allow Location
+                                                📍 Allow Location
                                             </button>
                                             <button
                                                 onClick={() => handleLocationAction("deny")}
-                                                className="flex-1 bg-white/5 border border-white/10 hover:bg-white/10 text-white/70 px-4 py-2.5 rounded-xl text-sm font-medium transition-colors"
+                                                className="flex-1 bg-gradient-to-r from-white/[0.06] to-white/[0.03] border border-white/10 hover:border-white/25 hover:from-white/[0.1] hover:to-white/[0.06] text-white/70 hover:text-white px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 backdrop-blur-sm hover:scale-[1.02] active:scale-[0.98]"
                                             >
-                                                Deny Location
+                                                🚫 Skip Location
                                             </button>
+                                        </motion.div>
+                                    )}
+                                    {/* Emergency Dial 112 */}
+                                    {message.role === "assistant" && (message.steps?.length || message.actionData?.length || message.rideEstimates) && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 1.0, duration: 0.4 }}
+                                            className="mt-3 w-full"
+                                        >
+                                            <a
+                                                href="tel:112"
+                                                className="group w-full flex items-center justify-center gap-2.5 bg-gradient-to-r from-red-600 to-rose-700 hover:from-red-500 hover:to-rose-600 text-white px-5 py-3.5 rounded-2xl text-sm font-bold transition-all duration-300 shadow-[0_0_25px_rgba(220,38,38,0.25)] hover:shadow-[0_0_40px_rgba(220,38,38,0.45)] border border-red-400/20 hover:scale-[1.02] active:scale-[0.98] animate-pulse hover:animate-none"
+                                            >
+                                                <span className="text-lg group-hover:scale-125 transition-transform duration-300">🚨</span> Emergency: Dial 112
+                                            </a>
+                                        </motion.div>
+                                    )}
+                                    {message.askSatisfaction && !sessionEnded && message.id === messages[messages.length - 1]?.id && !isTyping && (
+                                        <motion.div
+                                            initial={{ opacity: 0, y: 10 }}
+                                            animate={{ opacity: 1, y: 0 }}
+                                            transition={{ delay: 1.2, duration: 0.4 }}
+                                            className="mt-5 w-full"
+                                        >
+                                            <div className="bg-gradient-to-r from-white/[0.04] to-white/[0.02] border border-white/10 rounded-2xl p-4 backdrop-blur-sm">
+                                                <div className="text-white/60 text-[13px] mb-4 text-center font-medium">
+                                                    ✨ Is there anything more to figure out? Are you satisfied?
+                                                </div>
+                                                <div className="flex gap-3 w-full">
+                                                    <button
+                                                        onClick={() => handleSatisfaction(true)}
+                                                        className="flex-1 group bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 shadow-[0_0_25px_rgba(16,185,129,0.2)] hover:shadow-[0_0_35px_rgba(16,185,129,0.4)] border border-emerald-400/20 hover:scale-[1.03] active:scale-[0.97]"
+                                                    >
+                                                        <span className="flex items-center justify-center gap-2"><span className="group-hover:scale-125 transition-transform duration-300">✅</span> Satisfied</span>
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleSatisfaction(false)}
+                                                        className="flex-1 group bg-gradient-to-r from-amber-600 to-orange-600 hover:from-amber-500 hover:to-orange-500 text-white px-5 py-3 rounded-2xl text-sm font-semibold transition-all duration-300 shadow-[0_0_25px_rgba(245,158,11,0.2)] hover:shadow-[0_0_35px_rgba(245,158,11,0.4)] border border-amber-400/20 hover:scale-[1.03] active:scale-[0.97]"
+                                                    >
+                                                        <span className="flex items-center justify-center gap-2"><span className="group-hover:rotate-180 transition-transform duration-500">🔄</span> Need More Help</span>
+                                                    </button>
+                                                </div>
+                                            </div>
                                         </motion.div>
                                     )}
                                 </div>
@@ -685,6 +758,24 @@ export function AnimatedAIChat() {
 
             {/* Sticky Bottom Input */}
             <div className="w-full max-w-3xl mx-auto p-4 pb-8 relative z-20">
+                {sessionEnded ? (
+                    <motion.div
+                        initial={{ opacity: 0, y: 10 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        className="text-center space-y-5"
+                    >
+                        <div className="bg-gradient-to-r from-white/[0.04] to-white/[0.02] border border-white/10 rounded-2xl p-6 backdrop-blur-sm">
+                            <p className="text-white/50 text-sm mb-1">Session complete</p>
+                            <p className="text-lg font-medium bg-clip-text text-transparent bg-gradient-to-r from-violet-300 to-indigo-300">Stay safe, take care! 💙</p>
+                        </div>
+                        <button
+                            onClick={handleNewChat}
+                            className="group px-8 py-3.5 bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white rounded-2xl text-sm font-semibold transition-all duration-300 shadow-[0_0_30px_rgba(124,58,237,0.3)] hover:shadow-[0_0_45px_rgba(124,58,237,0.5)] border border-violet-400/20 hover:scale-[1.03] active:scale-[0.97]"
+                        >
+                            <span className="flex items-center gap-2.5"><span className="text-base group-hover:rotate-90 transition-transform duration-500">✨</span> Start New Chat</span>
+                        </button>
+                    </motion.div>
+                ) : (
                 <motion.div
                     className="relative backdrop-blur-2xl bg-[#0A0A0B]/80 rounded-2xl border border-white/[0.05] shadow-2xl overflow-hidden"
                     layout
@@ -723,7 +814,7 @@ export function AnimatedAIChat() {
                         )}
                     </AnimatePresence>
 
-                    <div className="p-2">
+                    <div className="p-2.5">
                         <Textarea
                             ref={textareaRef}
                             value={value}
@@ -735,25 +826,37 @@ export function AnimatedAIChat() {
                             onFocus={() => setInputFocused(true)}
                             onBlur={() => setInputFocused(false)}
                             placeholder="I’m here — what’s going on?"
-                            className="w-full bg-transparent border-none focus:ring-0 text-sm py-3 px-4 resize-none min-h-[52px]"
+                            className="w-full bg-transparent border-none focus:ring-0 text-[15px] py-4 px-5 resize-none min-h-[60px] text-white/90 placeholder:text-white/20 transition-all duration-300"
                             showRing={false}
                         />
                     </div>
 
-                    <div className="px-4 py-2 border-t border-white/[0.05] flex items-center justify-end bg-white/[0.01]">
+                    <div className="px-4 py-3 border-t border-white/[0.05] flex items-center justify-between bg-white/[0.02] backdrop-blur-md">
+                        <div className="flex gap-2">
+                             <div className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-white/[0.03] border border-white/[0.05]">
+                                 <div className="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse" />
+                                 <span className="text-[10px] uppercase tracking-wider font-bold text-white/40">Secure</span>
+                             </div>
+                        </div>
                         <button
                             onClick={() => handleSendMessage()}
                             disabled={!value.trim()}
                             className={cn(
-                                "px-4 py-1.5 rounded-lg text-xs font-medium flex items-center gap-2 transition-all",
-                                value.trim() ? "bg-white text-black" : "bg-white/5 text-white/20"
+                                "group relative px-6 py-2.5 rounded-2xl text-[13px] font-bold flex items-center gap-2.5 transition-all duration-300 shadow-xl",
+                                value.trim() 
+                                    ? "bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-500 hover:to-indigo-500 text-white shadow-violet-500/20 hover:shadow-violet-500/40 hover:scale-[1.03] active:scale-[0.97]" 
+                                    : "bg-white/[0.03] text-white/10 border border-white/[0.05]"
                             )}
                         >
-                            <SendIcon className="w-3 h-3" />
-                            <span>Send</span>
+                            <SendIcon className={cn("w-4 h-4 transition-transform duration-300 group-hover:translate-x-0.5 group-hover:-translate-y-0.5", !value.trim() && "opacity-20")} />
+                            <span>Send Message</span>
+                            {value.trim() && (
+                                <div className="absolute inset-0 rounded-2xl bg-white/10 opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+                            )}
                         </button>
                     </div>
                 </motion.div>
+                )}
 
                 <p className="text-center text-[12px] text-white/20 mt-4">
                     Your Emergency Support Companion

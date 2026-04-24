@@ -50,6 +50,30 @@ Output strictly in JSON format:
 
 async function handlePanicSituation(userMessage, location, step, history = []) {
   try {
+    // Handle satisfaction responses
+    const satisfiedPattern = /^(satisfied|yes.*(satisfied|happy|good|done|thanks)|i'?m\s+(good|fine|okay|ok|done|satisfied))[\s!.]*$/i;
+    const notSatisfiedPattern = /^(not\s*satisfied|no|need\s*more\s*help|not\s*(good|done|okay))[\s!.]*$/i;
+
+    if (satisfiedPattern.test(userMessage.trim())) {
+      return {
+        type: "session_end",
+        message: "I'm glad I could help! 💙 Remember, you're stronger than you think. Stay safe, and don't hesitate to reach out anytime you need me. Take care! 🌟",
+        steps: [],
+        data: [],
+        askSatisfaction: false
+      };
+    }
+
+    if (notSatisfiedPattern.test(userMessage.trim())) {
+      return {
+        type: "text_response",
+        message: "I understand — let's keep going. Tell me what else is troubling you or what specific help you need. I'm not going anywhere. 💪",
+        steps: [],
+        data: [],
+        askSatisfaction: false
+      };
+    }
+
     // 1. Format history for the AI model
     const messages = history.map(h => ({
       role: h.role === "assistant" ? "assistant" : "user",
@@ -110,7 +134,12 @@ async function handlePanicSituation(userMessage, location, step, history = []) {
       if (!location) {
         return {
           type: "request_location",
-          message: aiDecision.message + "\n\nCan you allow location access so I can find what's nearby and get your exact coordinates?"
+          message: aiDecision.message + "\n\nCan you allow location access so I can find what's nearby and get your exact coordinates?",
+          steps: aiDecision.steps || [],
+          whatsapp_draft: aiDecision.whatsapp_draft,
+          ride_estimates: ride_estimates,
+          data: [],
+          askSatisfaction: true
         };
       }
 
@@ -138,7 +167,8 @@ async function handlePanicSituation(userMessage, location, step, history = []) {
         steps: aiDecision.steps || [],
         whatsapp_draft: finalDraft,
         ride_estimates: ride_estimates,
-        data: places
+        data: places,
+        askSatisfaction: true
       };
     }
 
@@ -153,13 +183,15 @@ async function handlePanicSituation(userMessage, location, step, history = []) {
     }
 
     // 4. No action needed, just return the text response
+    const hasSubstantiveContent = (aiDecision.steps && aiDecision.steps.length > 0) || ride_estimates || finalDraft;
     return {
       type: "text_response",
       message: aiDecision.message,
       steps: aiDecision.steps || [],
       whatsapp_draft: finalDraft,
       ride_estimates: ride_estimates,
-      data: []
+      data: [],
+      askSatisfaction: hasSubstantiveContent
     };
 
   } catch (error) {

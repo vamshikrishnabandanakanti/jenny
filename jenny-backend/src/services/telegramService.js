@@ -45,6 +45,23 @@ bot.on('text', async (ctx) => {
     await processMessage(ctx, ctx.message.text, location);
 });
 
+// Handle Satisfaction Callback Buttons
+bot.action('satisfaction_yes', async (ctx) => {
+    await ctx.answerCbQuery('Thank you! 💙');
+    const sessionId = `tg_${ctx.chat.id}`;
+    const context = getContext(sessionId);
+    const location = context.location;
+    await processMessage(ctx, 'Satisfied', location);
+});
+
+bot.action('satisfaction_no', async (ctx) => {
+    await ctx.answerCbQuery('Let me help more...');
+    const sessionId = `tg_${ctx.chat.id}`;
+    const context = getContext(sessionId);
+    const location = context.location;
+    await processMessage(ctx, 'Not satisfied', location);
+});
+
 /**
  * Main message processing logic
  */
@@ -149,8 +166,21 @@ async function processMessage(ctx, userMessage, location) {
         // Emergency helpline info (Telegram doesn't support tel: URLs)
         buttons.push([Markup.button.url('📞 Emergency: Dial 112', 'https://www.google.com/search?q=emergency+helpline+112+India')]);
 
+        // ── SATISFACTION CHECK ──
+        if (jennyResponse.askSatisfaction) {
+            buttons.push([
+                Markup.button.callback('✅ Satisfied', 'satisfaction_yes'),
+                Markup.button.callback('🔄 Need More Help', 'satisfaction_no')
+            ]);
+        }
+
         // Send the response
         await ctx.replyWithMarkdown(responseText, Markup.inlineKeyboard(buttons));
+
+        // ── SESSION END ──
+        if (jennyResponse.type === 'session_end') {
+            await ctx.reply('💙 Session ended. Send /start anytime you need help again.');
+        }
 
     } catch (error) {
         console.error('[Telegram Bot] Error:', error);

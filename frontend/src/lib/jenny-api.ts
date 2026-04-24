@@ -3,10 +3,11 @@
 // =============================================
 
 export interface JennyActionResponse {
-  type: "action_response" | "text_response" | "request_location";
+  type: "action_response" | "text_response" | "request_location" | "session_end";
   message: string;
   steps?: string[];
   whatsapp_draft?: string;
+  askSatisfaction?: boolean;
   ride_estimates?: {
     destination_name: string;
     drop_lat: number;

@@ -10,6 +10,7 @@ const morgan     = require("morgan");
 const rateLimit  = require("express-rate-limit");
 const apiRoutes  = require("./routes/api");
 const actionChatRoutes = require("./routes/chat");
+const whatsappRoutes = require("./routes/whatsapp");
 const { initTelegramBot } = require("./services/telegramService");
 
 const app  = express();
@@ -35,6 +36,9 @@ app.use(cors({
 
 // JSON body parser
 app.use(express.json({ limit: "10kb" }));
+
+// URL encoded body parser (Required for Twilio webhooks)
+app.use(express.urlencoded({ extended: false }));
 
 // Request logging
 app.use(morgan("dev"));
@@ -64,6 +68,7 @@ initTelegramBot(app);
 
 app.use("/api", apiRoutes);
 app.use("/api/v2/chat", actionChatRoutes);
+app.use("/api/whatsapp", whatsappRoutes);
 
 // Root endpoint
 app.get("/", (req, res) => {
